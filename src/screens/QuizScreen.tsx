@@ -68,7 +68,9 @@ export function QuizScreen() {
                 onClick={nextQuestion}
                 className="w-full mt-6 bg-amber-500 hover:bg-amber-600 text-white font-bold py-3 px-6 rounded-lg transition-colors"
               >
-                {currentQuestionIndex < shuffledQuestions.length - 1 ? "Next Question →" : "See Results →"}
+                {currentQuestionIndex < shuffledQuestions.length - 1
+                  ? "Next Question →"
+                  : "See Results →"}
               </button>
             )}
           </div>

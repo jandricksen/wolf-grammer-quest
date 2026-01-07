@@ -95,17 +95,17 @@ Each question has:
 **Role-to-Trait Mapping:**
 Each wolf role has one defining trait. See `roleTraits` in constants and `getWolfTrait()` function in wolfUtils.
 
-| Role | Trait |
-|------|-------|
-| Alpha | courage |
-| Scout | swiftness |
-| Tracker | wisdom |
-| Hunter | courage |
-| Guardian | kindness |
-| Howler | focus |
-| Shadow | swiftness |
-| Elder | wisdom |
-| Storyteller | kindness |
+| Role        | Trait     |
+| ----------- | --------- |
+| Alpha       | courage   |
+| Scout       | swiftness |
+| Tracker     | wisdom    |
+| Hunter      | courage   |
+| Guardian    | kindness  |
+| Howler      | focus     |
+| Shadow      | swiftness |
+| Elder       | wisdom    |
+| Storyteller | kindness  |
 
 **Wolf Naming:**
 Wolf names are randomly assigned from a curated list of 64 nature-themed names (WOLF_NAMES in constants). Names are unique within a pack when possible. See `getRandomWolfName()` function in wolfUtils.
@@ -140,6 +140,7 @@ The app is currently at **Phase 1** (Wolf Statistics & Treats completed).
 - Wolf collection with single defining trait per wolf
 - Treat earning system
 - Pack and inventory screens
+- **Question and answer randomisation** to prevent pattern memorisation
 - **100% E2E test coverage with Playwright (15 passing tests)**
 
 **Planned (see DEVELOPMENT_PLAN.md):**
@@ -174,15 +175,22 @@ The app is currently at **Phase 1** (Wolf Statistics & Treats completed).
 
 **Territory Management:**
 
-- `startTerritory(territoryId)` - Initialize quiz for a territory
+- `startTerritory(territoryId)` - Initialize quiz for a territory, shuffle questions using `shuffleArray()`
 - `selectAnswer(answer)` - Handle answer selection and show feedback
 - `nextQuestion()` - Advance to next question or completion screen
 - `completeTerritory()` - Calculate score, award treats and wolves
+
+**Quiz Utilities:**
+
+- `shuffleArray<T>(array: T[]): T[]` - Fisher-Yates shuffle algorithm for randomising questions and answers
+- Questions are shuffled when territory starts (stored in `shuffledQuestions` state)
+- Multiple choice answers are shuffled when each question loads (in `QuestionRenderer`)
 
 **Wolf Management:**
 
 - `getWolfTrait(role)` - Get the defining trait for a wolf based on role
 - `addWolfToPack()` - Add named wolf to pack array
+- `getRandomWolfName(usedNames)` - Get unique wolf name from curated list
 
 **Treat Calculation:**
 

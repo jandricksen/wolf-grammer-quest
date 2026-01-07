@@ -153,60 +153,57 @@ Implement user feedback features from `docs/IMPLEMENTATION_PLAN_v2.md`. This pla
 
 ### C1: Add Shuffle Utility
 
-- [ ] Add `shuffleArray<T>(array: T[]): T[]` to `src/utils/quizUtils.ts`
+- [x] Add `shuffleArray<T>(array: T[]): T[]` to `src/utils/quizUtils.ts`
   - Fisher-Yates shuffle algorithm
   - Returns new array, doesn't mutate original
 
 ### C2: Randomise Answer Order
 
-- [ ] Update `src/screens/QuizScreen.tsx` or `src/components/QuestionRenderer.tsx`:
+- [x] Update `src/components/QuestionRenderer.tsx`:
   - Shuffle `options` array for `type: "multiple"` questions
-  - Shuffle on question load, not on every render
+  - Shuffle on question load using useEffect, not on every render
   - Store shuffled options in local state
   - Track correct answer by value, not position
 
 ### C3: Randomise Question Selection
 
-- [ ] Update `src/contexts/GameContext.tsx` in `startTerritory()`:
-  - Shuffle full question array
-  - Select first N questions (keep current count per territory)
-  - Store selected questions in quiz state
-- [ ] Ensure no duplicate questions in same session
+- [x] Update `src/contexts/GameContext.tsx` in `startTerritory()`:
+  - Shuffle full question array using `shuffleArray()`
+  - Store shuffled questions in `shuffledQuestions` state
+  - Use shuffled questions throughout quiz flow
+- [x] No duplicate questions in same session (all questions shuffled once per territory attempt)
 
 ### C4: Expand Question Banks (Content Prep)
 
-- [ ] Document current question counts per territory
-- [ ] Note: Expanding to 20-25 questions per territory is ongoing content work
-- [ ] Ensure randomisation logic works regardless of pool size
+- [x] Documented: All territories have 10 questions currently
+- [x] Note: Expanding to 20-25 questions per territory is future content work
+- [x] Randomisation logic works regardless of pool size
 
 ### E2E Test Updates (Phase C)
 
 **Impact analysis:**
 
-- Existing tests use hardcoded `correctAnswers` arrays (e.g., `quiz-flow.spec.ts` lines 16-27)
-- These tests will STILL WORK because:
-  - Answer matching is by value, not position
-  - Question content remains the same, only order changes
-  - Shuffling answers doesn't change which answer is correct
-
-**Considerations:**
-
-- Tests rely on specific questions appearing - with question randomisation, tests may see different questions
-- May need to update tests to be more flexible about which questions appear
+- Existing tests used hardcoded question order - UPDATED
+- Tests now use flexible answer matching that works with randomised questions
+- Added helper function `answerQuizQuestions()` for consistent test pattern
 
 **Test changes:**
 
-- [ ] Verify existing tests pass with answer order randomisation
-- [ ] If question selection randomisation breaks tests, update to use more flexible matching
-- [ ] Consider adding test: "questions differ between sessions" (run twice, compare)
+- [x] Updated `quiz-flow.spec.ts` - complete full quiz journey test to find visible correct answers
+- [x] Updated `wolf-earning.spec.ts` - all tests updated with helper function
+- [x] Updated "failing score" test with list of known wrong answers to click
+- [x] Updated "progress" and "feedback" tests to use correct answer list
+- [x] All 15 tests passing ✅
 
 ### Documentation Update (Phase C)
 
-- [ ] Update `CLAUDE.md` to note randomisation
-- [ ] Run `npm run test:e2e` and fix any failing tests (may need updates for randomisation)
-- [ ] Run `npm run lint` and `npm run build`
+- [x] Updated `CLAUDE.md` to note randomisation in completed features
+- [x] Added randomisation details to Key Functions section
+- [x] Ran `npm run test:e2e` - **15/15 tests passing** ✅
+- [x] Ran `npm run lint` - **no errors** ✅
+- [x] Ran `npm run build` - **successful** ✅
 
-**Status:** ⬜ Not Started
+**Status:** ✅ **COMPLETED**
 
 ---
 
