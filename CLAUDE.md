@@ -246,6 +246,7 @@ The original `wolf-grammar-quest.jsx` (~1,777 lines) has been archived to `wolf-
 - `e2e/screens.spec.ts` - Screen loading and navigation (5 tests)
 - `e2e/quiz-flow.spec.ts` - Quiz journey and question types (5 tests)
 - `e2e/wolf-earning.spec.ts` - Wolf reward flow and scoring (5 tests)
+- `e2e/test-utils.ts` - Shared test utilities and helpers
 
 **Running Tests:**
 
@@ -257,11 +258,22 @@ npm run test:e2e -- screens   # Run only screen tests
 
 **Test Development Guidelines:**
 
+- **Data-driven tests**: Tests import actual question data from `src/data/territories` - no hardcoded answers
+- **Resilient to content changes**: Adding/modifying questions won't break tests
+- Use `getCorrectAnswers()` and `getWrongAnswers()` utilities from `test-utils.ts`
 - Always use correct answers in tests for predictable outcomes
 - Use regex patterns for flexible text matching (e.g., `/scored \d+ out of \d+/`)
 - Add `.first()` to selectors that may match multiple elements (strict mode)
 - Never test exact values for randomly generated content (wolf names)
 - Verify tests pass locally before committing
+
+**Adding Questions to Question Banks:**
+
+When expanding question banks (e.g., from 10 to 25 questions per territory):
+- Tests automatically adapt to new question counts
+- No test updates required - tests use `territory.questions.length`
+- Wrong answers are automatically extracted from all question options
+- Simply add new questions to territory files, tests will work unchanged
 
 ## Code Quality & Formatting
 

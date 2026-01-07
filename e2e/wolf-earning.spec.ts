@@ -1,32 +1,11 @@
-import { test, expect, type Page } from "@playwright/test";
-
-// Helper function to answer quiz questions with randomised order
-async function answerQuizQuestions(page: Page, correctAnswers: string[], numQuestions: number) {
-  for (let i = 0; i < numQuestions; i++) {
-    await page.waitForTimeout(700);
-
-    // Try to find and click any of the correct answers that's visible
-    let answerClicked = false;
-    for (const answer of correctAnswers) {
-      const answerButton = page.getByRole("button", { name: answer, exact: true });
-      if (await answerButton.isVisible({ timeout: 500 }).catch(() => false)) {
-        await answerButton.click();
-        answerClicked = true;
-        break;
-      }
-    }
-
-    if (!answerClicked) {
-      throw new Error(`Could not find any correct answer on question ${i + 1}`);
-    }
-
-    await page.waitForTimeout(700);
-
-    // Click next or see results
-    const nextButton = page.getByText(/Next Question|See Results/);
-    await nextButton.click();
-  }
-}
+import { test, expect } from "@playwright/test";
+import { territories } from "../src/data/territories";
+import {
+  getCorrectAnswers,
+  getWrongAnswers,
+  answerQuizQuestions,
+  answerQuestionsIncorrectly,
+} from "./test-utils";
 
 test.describe("Wolf Earning Tests", () => {
   test("complete territory with 80%+ score and earn wolf", async ({ page }) => {
@@ -39,21 +18,13 @@ test.describe("Wolf Earning Tests", () => {
     // Verify quiz started
     await expect(page.getByText("Question 1 of")).toBeVisible();
 
-    // All correct answers for Apostrophe Forest (questions appear in random order)
-    const correctAnswers = [
-      "wolf's",
-      "The wolves' territory was vast.",
-      "doesn't",
-      "The decision belongs to the alpha",
-      "pups' coats",
-      "couldn't howl",
-      "pack's",
-      "The pack knows its territory well.",
-      "More than one wolf",
-    ];
+    // Get correct answers from actual question data
+    const territory = territories["apostrophes"];
+    const correctAnswers = getCorrectAnswers(territory.questions);
+    const questionCount = territory.questions.length;
 
-    // Answer all 10 questions correctly to earn wolf
-    await answerQuizQuestions(page, correctAnswers, 10);
+    // Answer all questions correctly to earn wolf
+    await answerQuizQuestions(page, correctAnswers, questionCount);
 
     // Verify completion screen shows "Territory Conquered!"
     await expect(page.getByRole("heading", { name: "Territory Conquered!" })).toBeVisible({
@@ -74,22 +45,13 @@ test.describe("Wolf Earning Tests", () => {
     const territoryCard = page.getByRole("button").filter({ hasText: "Apostrophe Forest" });
     await territoryCard.click();
 
-    // All correct answers for Apostrophe Forest (questions appear in random order)
-    const correctAnswers = [
-      "wolf's",
-      "The wolves' territory was vast.",
-      "doesn't",
-      "The decision belongs to the alpha",
-      "pups' coats",
-      "couldn't howl",
-      "pack's",
-      "The pack knows its territory well.",
-      "More than one wolf",
-    ];
+    // Get correct answers from actual question data
+    const territory = territories["apostrophes"];
+    const correctAnswers = getCorrectAnswers(territory.questions);
+    const questionCount = territory.questions.length;
 
-    // Answer all 10 questions correctly to ensure 80%+ score
-    // (Simpler than trying to get exactly 8/10 with randomised questions)
-    await answerQuizQuestions(page, correctAnswers, 10);
+    // Answer all questions correctly to ensure 80%+ score
+    await answerQuizQuestions(page, correctAnswers, questionCount);
 
     // Wait for completion screen
     await expect(page.getByRole("heading", { name: "Territory Conquered!" })).toBeVisible({
@@ -153,88 +115,20 @@ test.describe("Wolf Earning Tests", () => {
     const territoryCard = page.getByRole("button").filter({ hasText: "Apostrophe Forest" });
     await territoryCard.click();
 
-    // All correct answers for Apostrophe Forest
-    const correctAnswers = [
-      "wolf's",
-      "The wolves' territory was vast.",
-      "doesn't",
-      "The decision belongs to the alpha",
-      "pups' coats",
-      "couldn't howl",
-      "pack's",
-      "The pack knows its territory well.",
-      "More than one wolf",
-    ];
+    // Get correct and wrong answers from actual question data
+    const territory = territories["apostrophes"];
+    const correctAnswers = getCorrectAnswers(territory.questions);
+    const wrongAnswers = getWrongAnswers(territory.questions);
+    const questionCount = territory.questions.length;
 
-    // Known wrong answers we can click to fail
-    const wrongAnswers = [
-      "howl",
-      "echoed",
-      "mountains",
-      "The wolve's hunted together.",
-      "The wolves territory was vast.",
-      "pack",
-      "hottest",
-      "day",
-      "A letter is missing",
-      "There is more than one alpha",
-      "pup's coats",
-      "pups coat's",
-      "wolf's den",
-      "the pack's hunt",
-      "Luna's fur",
-      "It's",
-      "strength",
-      "working",
-      "The wolf wagged it's tail.",
-      "Its a cold night for hunting.",
-      "wolfs",
-      "wolves",
-      "wolves'",
-      "One wolf",
-      "No wolves own anything",
-      "We cannot tell",
-    ];
+    // Answer only 50% questions correctly (below 80% threshold)
+    const correctCount = Math.floor(questionCount * 0.5);
+    const wrongCount = questionCount - correctCount;
 
-    // Answer only 5 questions correctly (50% - below 80% threshold)
-    await answerQuizQuestions(page, correctAnswers, 5);
+    await answerQuizQuestions(page, correctAnswers, correctCount);
 
-    // Answer last 5 questions with wrong answers
-    for (let i = 0; i < 5; i++) {
-      await page.waitForTimeout(700);
-
-      // Try to click a wrong answer
-      let wrongClicked = false;
-      for (const wrongAnswer of wrongAnswers) {
-        const wrongButton = page.getByRole("button", { name: wrongAnswer, exact: true });
-        if (await wrongButton.isVisible({ timeout: 500 }).catch(() => false)) {
-          await wrongButton.click();
-          wrongClicked = true;
-          break;
-        }
-      }
-
-      // If no specific wrong answer found, click first non-correct button
-      if (!wrongClicked) {
-        const allButtons = page.getByRole("button").filter({ hasText: /.+/ });
-        const count = await allButtons.count();
-        for (let j = 0; j < count; j++) {
-          const buttonText = await allButtons.nth(j).textContent();
-          if (buttonText && !correctAnswers.includes(buttonText.trim())) {
-            await allButtons.nth(j).click();
-            wrongClicked = true;
-            break;
-          }
-        }
-      }
-
-      await page.waitForTimeout(700);
-
-      const nextButton = page.getByText(/Next Question|See Results/);
-      if (await nextButton.isVisible({ timeout: 2000 }).catch(() => false)) {
-        await nextButton.click();
-      }
-    }
+    // Answer remaining questions with wrong answers
+    await answerQuestionsIncorrectly(page, wrongAnswers, correctAnswers, wrongCount);
 
     // Wait for completion screen
     await expect(page.getByRole("heading", { name: "Keep Practising!" })).toBeVisible({
@@ -252,21 +146,13 @@ test.describe("Wolf Earning Tests", () => {
     const territoryCard = page.getByRole("button").filter({ hasText: "Apostrophe Forest" });
     await territoryCard.click();
 
-    // All correct answers for Apostrophe Forest (questions appear in random order)
-    const correctAnswers = [
-      "wolf's",
-      "The wolves' territory was vast.",
-      "doesn't",
-      "The decision belongs to the alpha",
-      "pups' coats",
-      "couldn't howl",
-      "pack's",
-      "The pack knows its territory well.",
-      "More than one wolf",
-    ];
+    // Get correct answers from actual question data
+    const territory = territories["apostrophes"];
+    const correctAnswers = getCorrectAnswers(territory.questions);
+    const questionCount = territory.questions.length;
 
-    // Answer all 10 questions correctly for 100% score
-    await answerQuizQuestions(page, correctAnswers, 10);
+    // Answer all questions correctly for 100% score
+    await answerQuizQuestions(page, correctAnswers, questionCount);
 
     // Wait for completion screen
     await expect(page.getByRole("heading", { name: "Territory Conquered!" })).toBeVisible({

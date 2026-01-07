@@ -1,4 +1,6 @@
 import { test, expect } from "@playwright/test";
+import { territories } from "../src/data/territories";
+import { getCorrectAnswers, answerQuizQuestions } from "./test-utils";
 
 test.describe("Quiz Flow Tests", () => {
   test("complete full quiz journey", async ({ page }) => {
@@ -12,44 +14,13 @@ test.describe("Quiz Flow Tests", () => {
     await expect(page.getByText("Question 1 of")).toBeVisible();
     await expect(page.getByText("Apostrophe Forest")).toBeVisible();
 
-    // All correct answers for Apostrophe Forest questions (in any order due to randomisation)
-    const correctAnswers = [
-      "wolf's",
-      "The wolves' territory was vast.",
-      "doesn't",
-      "The decision belongs to the alpha",
-      "pups' coats",
-      "couldn't howl",
-      "pack's",
-      "The pack knows its territory well.",
-      "More than one wolf",
-    ];
+    // Get correct answers from actual question data
+    const territory = territories["apostrophes"];
+    const correctAnswers = getCorrectAnswers(territory.questions);
+    const questionCount = territory.questions.length;
 
-    // Answer all 10 questions correctly to complete the quiz
-    for (let i = 0; i < 10; i++) {
-      await page.waitForTimeout(700);
-
-      // Try to find and click any of the correct answers that's visible
-      let answerClicked = false;
-      for (const answer of correctAnswers) {
-        const answerButton = page.getByRole("button", { name: answer, exact: true });
-        if (await answerButton.isVisible({ timeout: 500 }).catch(() => false)) {
-          await answerButton.click();
-          answerClicked = true;
-          break;
-        }
-      }
-
-      if (!answerClicked) {
-        throw new Error(`Could not find any correct answer on question ${i + 1}`);
-      }
-
-      await page.waitForTimeout(700);
-
-      // Click next or see results
-      const nextButton = page.getByText(/Next Question|See Results/);
-      await nextButton.click();
-    }
+    // Answer all questions correctly to complete the quiz
+    await answerQuizQuestions(page, correctAnswers, questionCount);
 
     // Verify completion screen appears
     await expect(page.getByRole("heading", { name: "Territory Conquered!" })).toBeVisible({
@@ -153,18 +124,9 @@ test.describe("Quiz Flow Tests", () => {
     // Check initial progress
     await expect(page.getByText("Question 1 of")).toBeVisible();
 
-    // All correct answers for Apostrophe Forest
-    const correctAnswers = [
-      "wolf's",
-      "The wolves' territory was vast.",
-      "doesn't",
-      "The decision belongs to the alpha",
-      "pups' coats",
-      "couldn't howl",
-      "pack's",
-      "The pack knows its territory well.",
-      "More than one wolf",
-    ];
+    // Get correct answers from actual question data
+    const territory = territories["apostrophes"];
+    const correctAnswers = getCorrectAnswers(territory.questions);
 
     // Answer first question with any correct answer
     await page.waitForTimeout(700);
@@ -202,18 +164,9 @@ test.describe("Quiz Flow Tests", () => {
     // Wait for question
     await expect(page.getByText("Question 1 of")).toBeVisible();
 
-    // All correct answers for Apostrophe Forest
-    const correctAnswers = [
-      "wolf's",
-      "The wolves' territory was vast.",
-      "doesn't",
-      "The decision belongs to the alpha",
-      "pups' coats",
-      "couldn't howl",
-      "pack's",
-      "The pack knows its territory well.",
-      "More than one wolf",
-    ];
+    // Get correct answers from actual question data
+    const territory = territories["apostrophes"];
+    const correctAnswers = getCorrectAnswers(territory.questions);
 
     // Select a correct answer to ensure we can verify feedback
     await page.waitForTimeout(700);
