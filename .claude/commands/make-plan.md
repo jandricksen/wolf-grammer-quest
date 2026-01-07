@@ -1,0 +1,1 @@
+Make a detailed plan to implement in the same style as the ones in docs/plans/completed. Using Phases, Checkboxes and Documentation Update steps at the end of each Phase. Put this plan in docs/plans/ongoing

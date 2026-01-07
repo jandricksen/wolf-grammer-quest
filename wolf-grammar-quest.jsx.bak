@@ -1,0 +1,1777 @@
+import React, { useState, useEffect } from 'react';
+
+const WolfGrammarQuest = () => {
+  const [screen, setScreen] = useState('home');
+  const [currentTerritory, setCurrentTerritory] = useState(null);
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+  const [score, setScore] = useState(0);
+  const [selectedAnswer, setSelectedAnswer] = useState(null);
+  const [showFeedback, setShowFeedback] = useState(false);
+  const [showPackReward, setShowPackReward] = useState(false);
+  const [newWolfName, setNewWolfName] = useState('');
+  const [pendingWolf, setPendingWolf] = useState(null);
+  const [completedTerritories, setCompletedTerritories] = useState({});
+  const [territoryScores, setTerritoryScores] = useState({});
+  const [selectedWolf, setSelectedWolf] = useState(null);
+  
+  // Phase 1: Treats system
+  const [treats, setTreats] = useState({
+    meatChunk: 5,      // Starting treats to get going
+    wisdomBerry: 0,
+    swiftMeat: 0,
+    goldenKibble: 0
+  });
+  
+  // Phase 1: Pending treats to show on completion screen
+  const [pendingTreats, setPendingTreats] = useState(null);
+
+  // Stat definitions - what each stat means
+  const statInfo = {
+    wisdom: { name: 'Wisdom', icon: '📚', description: 'Helps solve tricky puzzles' },
+    swiftness: { name: 'Swiftness', icon: '💨', description: 'Quick thinking and reactions' },
+    courage: { name: 'Courage', icon: '🦁', description: 'Brave in difficult situations' },
+    kindness: { name: 'Kindness', icon: '💝', description: 'Caring and helpful to others' },
+    focus: { name: 'Focus', icon: '🎯', description: 'Concentration and attention' }
+  };
+
+  // Treat definitions
+  const treatInfo = {
+    meatChunk: { name: 'Meat Chunk', icon: '🍖', description: 'Restores hunger' },
+    wisdomBerry: { name: 'Wisdom Berry', icon: '🫐', description: 'Boosts Wisdom' },
+    swiftMeat: { name: 'Swift Meat', icon: '🥩', description: 'Boosts Swiftness' },
+    goldenKibble: { name: 'Golden Kibble', icon: '✨', description: 'Rare! Boosts all stats' }
+  };
+
+  // Role-based stat templates (primary stat gets 6-8, secondary gets 4-6, others get 2-4)
+  const roleStatTemplates = {
+    Alpha: { primary: 'courage', secondary: 'wisdom' },
+    Scout: { primary: 'swiftness', secondary: 'focus' },
+    Tracker: { primary: 'wisdom', secondary: 'focus' },
+    Hunter: { primary: 'courage', secondary: 'swiftness' },
+    Guardian: { primary: 'courage', secondary: 'kindness' },
+    Howler: { primary: 'kindness', secondary: 'wisdom' },
+    Shadow: { primary: 'swiftness', secondary: 'courage' },
+    Elder: { primary: 'wisdom', secondary: 'kindness' },
+    Storyteller: { primary: 'kindness', secondary: 'wisdom' }
+  };
+
+  // Generate stats for a wolf based on their role
+  const generateWolfStats = (role) => {
+    const template = roleStatTemplates[role] || { primary: 'courage', secondary: 'wisdom' };
+    const stats = {};
+    
+    Object.keys(statInfo).forEach(stat => {
+      if (stat === template.primary) {
+        stats[stat] = Math.floor(Math.random() * 3) + 6; // 6-8
+      } else if (stat === template.secondary) {
+        stats[stat] = Math.floor(Math.random() * 3) + 4; // 4-6
+      } else {
+        stats[stat] = Math.floor(Math.random() * 3) + 2; // 2-4
+      }
+    });
+    
+    return stats;
+  };
+
+  // Initialize pack with Luna having stats
+  const [pack, setPack] = useState([
+    { 
+      id: 'luna_alpha',
+      name: 'Luna', 
+      role: 'Alpha', 
+      earned: true,
+      fact: 'The alpha wolf leads and protects the pack.',
+      stats: {
+        wisdom: 7,
+        swiftness: 5,
+        courage: 8,
+        kindness: 6,
+        focus: 5
+      }
+    }
+  ]);
+
+  const territories = {
+    apostrophes: {
+      name: 'Apostrophe Forest',
+      description: 'Master the art of possession and contraction',
+      icon: '🌲',
+      questions: [
+        {
+          type: 'tap',
+          question: "Tap the word that shows possession:",
+          sentence: "The wolf's howl echoed through the mountains.",
+          options: ['The', "wolf's", 'howl', 'echoed', 'through', 'the', 'mountains'],
+          correct: "wolf's",
+          explanation: "Wolf's shows the howl belongs to the wolf. The apostrophe before the 's' shows possession.",
+          wrongExplanation: "A possessive apostrophe shows that something belongs to someone or something. Look for a word with an apostrophe followed by 's' (like wolf's) — this means 'belonging to the wolf'. The correct answer is 'wolf's' because the howl belongs to the wolf."
+        },
+        {
+          type: 'multiple',
+          question: "Which sentence uses the apostrophe correctly?",
+          options: [
+            "The wolve's hunted together.",
+            "The wolves' territory was vast.",
+            "The wolves territory was vast.",
+            "The wolf's were howling."
+          ],
+          correct: "The wolves' territory was vast.",
+          explanation: "Wolves' shows the territory belongs to multiple wolves. The apostrophe comes after the 's' for plurals.",
+          wrongExplanation: "When something belongs to more than one person or thing (plural), the apostrophe goes after the 's'. So 'wolves' territory' means 'the territory belonging to the wolves'. The correct answer is 'The wolves' territory was vast.' — the apostrophe after 'wolves' shows the territory belongs to multiple wolves."
+        },
+        {
+          type: 'tap',
+          question: "Tap the contraction (a shortened word):",
+          sentence: "The pack doesn't hunt during the hottest part of the day.",
+          options: ['The', 'pack', "doesn't", 'hunt', 'during', 'the', 'hottest', 'part', 'of', 'day'],
+          correct: "doesn't",
+          explanation: "Doesn't is a contraction of 'does not'. The apostrophe shows where letters have been removed.",
+          wrongExplanation: "A contraction is when two words are squashed together and some letters are removed. The apostrophe shows where the missing letters used to be. For example, 'does not' becomes 'doesn't' — the apostrophe replaces the 'o' in 'not'. The correct answer is 'doesn't'."
+        },
+        {
+          type: 'multiple',
+          question: "What does the apostrophe show in: 'The alpha's decision was final'?",
+          options: [
+            "A letter is missing",
+            "The decision belongs to the alpha",
+            "There is more than one alpha",
+            "The sentence is a question"
+          ],
+          correct: "The decision belongs to the alpha",
+          explanation: "This is a possessive apostrophe — it shows the decision belongs to the alpha wolf.",
+          wrongExplanation: "Apostrophes have two main jobs: showing possession (belonging) or showing where letters are missing (contractions). In 'alpha's decision', the apostrophe + s shows the decision belongs to the alpha. This is a possessive apostrophe."
+        },
+        {
+          type: 'fill',
+          question: "Add the apostrophe in the correct place:",
+          sentence: "The pups coats were thick and warm.",
+          options: ["pup's coats", "pups' coats", "pups coat's"],
+          correct: "pups' coats",
+          explanation: "Multiple pups own the coats, so the apostrophe goes after the 's' in pups.",
+          wrongExplanation: "When showing possession for plurals (more than one), the apostrophe goes after the 's'. Since multiple pups own the coats, we write 'pups' coats' — the apostrophe after 'pups' shows the coats belong to all the pups."
+        },
+        {
+          type: 'multiple',
+          question: "Which word is a contraction?",
+          options: ["wolf's den", "couldn't howl", "the pack's hunt", "Luna's fur"],
+          correct: "couldn't howl",
+          explanation: "Couldn't is short for 'could not'. The other examples show possession (belonging to).",
+          wrongExplanation: "A contraction is two words joined together with some letters removed (like 'could not' becoming 'couldn't'). The other options (wolf's, pack's, Luna's) are possessive — they show something belongs to the wolf, pack, or Luna. The correct answer is 'couldn't' because it's short for 'could not'."
+        },
+        {
+          type: 'tap',
+          question: "Tap the possessive word:",
+          sentence: "It's clear that the pack's strength comes from working together.",
+          options: ["It's", 'clear', 'that', 'the', "pack's", 'strength', 'comes', 'from', 'working', 'together'],
+          correct: "pack's",
+          explanation: "Pack's shows the strength belongs to the pack. 'It's' is a contraction of 'it is', not possession!",
+          wrongExplanation: "A possessive word shows that something belongs to someone or something. Be careful: 'It's' is a contraction meaning 'it is' — it's NOT possessive! The word showing possession here is 'pack's' because the strength belongs to the pack."
+        },
+        {
+          type: 'multiple',
+          question: "'It's' and 'its' — which sentence is correct?",
+          options: [
+            "The wolf wagged it's tail.",
+            "Its a cold night for hunting.",
+            "The pack knows its territory well.",
+            "It's fur was silver and grey."
+          ],
+          correct: "The pack knows its territory well.",
+          explanation: "'Its' (no apostrophe) shows possession. 'It's' always means 'it is' or 'it has'.",
+          wrongExplanation: "This is a tricky rule! 'It's' (with apostrophe) ALWAYS means 'it is' or 'it has'. 'Its' (no apostrophe) shows possession — something belonging to 'it'. So 'its territory' means 'the territory belonging to it'. The correct answer is 'The pack knows its territory well.'"
+        },
+        {
+          type: 'fill',
+          question: "Choose the correct version:",
+          sentence: "The ___ den was hidden in the rocks.",
+          options: ["wolfs", "wolf's", "wolves"],
+          correct: "wolf's",
+          explanation: "One wolf owns the den, so we use wolf's with an apostrophe before the 's'.",
+          wrongExplanation: "To show that something belongs to one person or thing, we add apostrophe + s. Since one wolf owns the den, we write 'wolf's den' — the apostrophe before the 's' shows singular possession."
+        },
+        {
+          type: 'multiple',
+          question: "How many wolves own something in: 'The wolves' howls filled the valley'?",
+          options: [
+            "One wolf",
+            "More than one wolf",
+            "No wolves own anything",
+            "We cannot tell"
+          ],
+          correct: "More than one wolf",
+          explanation: "The apostrophe after 'wolves' tells us multiple wolves are doing the howling.",
+          wrongExplanation: "The position of the apostrophe tells us how many owners there are. When the apostrophe comes after the 's' (wolves'), it means the word is plural — so more than one wolf. When the apostrophe comes before the 's' (wolf's), it means just one."
+        }
+      ]
+    },
+    subordinate: {
+      name: 'Clause Canyon',
+      description: 'Find the subordinate clauses hiding in sentences',
+      icon: '🏔️',
+      questions: [
+        {
+          type: 'tap-clause',
+          question: "Tap all the words in the subordinate clause:",
+          sentence: "The wolf waited patiently until the deer moved closer.",
+          words: ['The', 'wolf', 'waited', 'patiently', 'until', 'the', 'deer', 'moved', 'closer'],
+          correctRange: [4, 8],
+          correct: "until the deer moved closer",
+          explanation: "The subordinate clause starts with 'until' and gives extra information. The main clause 'The wolf waited patiently' makes sense on its own.",
+          wrongExplanation: "A subordinate clause is a group of words with a verb that cannot stand alone as a sentence — it depends on the main clause. It usually starts with words like 'until', 'because', 'when', 'although', or 'if'. Here, 'until the deer moved closer' is the subordinate clause because it can't be a sentence on its own."
+        },
+        {
+          type: 'multiple',
+          question: "Which is the subordinate clause in: 'Because she was hungry, the wolf began to hunt'?",
+          options: [
+            "the wolf began to hunt",
+            "Because she was hungry",
+            "began to hunt",
+            "the wolf"
+          ],
+          correct: "Because she was hungry",
+          explanation: "'Because she was hungry' is subordinate — it can't stand alone as a sentence and starts with the subordinating conjunction 'because'.",
+          wrongExplanation: "A subordinate clause cannot stand alone as a complete sentence — it needs the main clause to make sense. It often starts with words like 'because', 'although', 'when', 'if', or 'until'. 'Because she was hungry' is subordinate because you can't just say that on its own — it needs 'the wolf began to hunt' to complete the thought."
+        },
+        {
+          type: 'multiple',
+          question: "What makes a clause 'subordinate'?",
+          options: [
+            "It is very short",
+            "It cannot stand alone as a complete sentence",
+            "It always comes at the end",
+            "It contains a verb"
+          ],
+          correct: "It cannot stand alone as a complete sentence",
+          explanation: "A subordinate clause depends on the main clause. It adds information but isn't a complete thought by itself.",
+          wrongExplanation: "A subordinate clause is a group of words containing a verb that cannot stand alone as a complete sentence. It depends on the main clause to make sense. For example, 'because she was tired' has a verb but isn't a complete thought — it needs a main clause like 'the wolf rested'."
+        },
+        {
+          type: 'tap-word',
+          question: "Tap the word that starts the subordinate clause:",
+          sentence: "The pack rested when the sun was at its highest.",
+          options: ['The', 'pack', 'rested', 'when', 'the', 'sun', 'was', 'at', 'its', 'highest'],
+          correct: 'when',
+          explanation: "'When' is a subordinating conjunction. It introduces the subordinate clause 'when the sun was at its highest'.",
+          wrongExplanation: "Subordinate clauses are introduced by subordinating conjunctions — words like 'when', 'because', 'although', 'if', 'until', 'while', and 'before'. These words signal that a subordinate clause is about to begin. Here, 'when' starts the subordinate clause."
+        },
+        {
+          type: 'multiple',
+          question: "Which word could NOT start a subordinate clause?",
+          options: ['because', 'although', 'wolf', 'while'],
+          correct: 'wolf',
+          explanation: "Subordinate clauses start with subordinating conjunctions like because, although, while, when, if, unless, until.",
+          wrongExplanation: "Subordinate clauses must start with subordinating conjunctions — special words like 'because', 'although', 'while', 'when', 'if', 'unless', 'until', 'before', and 'after'. 'Wolf' is a noun (a naming word), not a conjunction, so it cannot start a subordinate clause."
+        },
+        {
+          type: 'multiple',
+          question: "In 'Although the night was cold, the wolves kept moving', which is the main clause?",
+          options: [
+            "Although the night was cold",
+            "the wolves kept moving",
+            "the night was cold",
+            "kept moving"
+          ],
+          correct: "the wolves kept moving",
+          explanation: "'The wolves kept moving' makes complete sense on its own — that's your main clause!",
+          wrongExplanation: "The main clause is the part of the sentence that can stand alone and make complete sense. The subordinate clause (starting with 'although') depends on it. Ask yourself: which part makes sense as a complete sentence? 'The wolves kept moving' does — that's the main clause."
+        },
+        {
+          type: 'tap-word',
+          question: "Tap the subordinating conjunction:",
+          sentence: "The alpha stayed alert while the pups were sleeping.",
+          options: ['The', 'alpha', 'stayed', 'alert', 'while', 'the', 'pups', 'were', 'sleeping'],
+          correct: 'while',
+          explanation: "'While' is a subordinating conjunction — it introduces the subordinate clause 'while the pups were sleeping'.",
+          wrongExplanation: "A subordinating conjunction is a word that introduces a subordinate clause. Common ones include: while, when, because, although, if, unless, until, before, after. Here, 'while' introduces the subordinate clause 'while the pups were sleeping'."
+        },
+        {
+          type: 'multiple',
+          question: "Where is the subordinate clause in: 'The wolf, who was the oldest, led the hunt'?",
+          options: [
+            "The wolf led the hunt",
+            "who was the oldest",
+            "led the hunt",
+            "The wolf"
+          ],
+          correct: "who was the oldest",
+          explanation: "This subordinate clause is embedded in the middle! 'Who was the oldest' gives extra information about the wolf.",
+          wrongExplanation: "A subordinate clause adds extra information and cannot stand alone. Sometimes it's embedded in the middle of a sentence, between commas. 'Who was the oldest' is a relative clause (a type of subordinate clause) — it gives extra information about the wolf but isn't a complete sentence on its own."
+        },
+        {
+          type: 'multiple',
+          question: "Which sentence contains a subordinate clause?",
+          options: [
+            "The wolves howled loudly.",
+            "The pack ran and the deer fled.",
+            "Before dawn broke, the hunt began.",
+            "Luna is fast and strong."
+          ],
+          correct: "Before dawn broke, the hunt began.",
+          explanation: "'Before dawn broke' is subordinate — it starts with 'before' and can't stand alone.",
+          wrongExplanation: "A subordinate clause starts with a subordinating conjunction (like 'before', 'because', 'when', 'although') and cannot stand alone as a sentence. Look for these signal words! 'Before dawn broke' starts with 'before' and can't be a sentence on its own — that makes it a subordinate clause."
+        },
+        {
+          type: 'multiple',
+          question: "If you remove the subordinate clause from 'The wolf slept because she was tired', what remains?",
+          options: [
+            "because she was tired",
+            "The wolf slept",
+            "she was tired",
+            "wolf slept because"
+          ],
+          correct: "The wolf slept",
+          explanation: "The main clause 'The wolf slept' is a complete sentence. The subordinate clause 'because she was tired' adds extra information.",
+          wrongExplanation: "The main clause is what remains when you remove the subordinate clause. The main clause can stand alone as a complete sentence. 'Because she was tired' is the subordinate clause (it starts with 'because' and can't stand alone). Remove it, and you're left with 'The wolf slept' — the main clause."
+        }
+      ]
+    },
+    wordclasses: {
+      name: 'Word Class Wilderness',
+      description: 'Identify nouns, verbs, and adjectives in the wild',
+      icon: '🌿',
+      questions: [
+        {
+          type: 'tap',
+          question: "Tap the NOUN (a naming word for a thing, place, or creature):",
+          sentence: "The fierce wolf guarded her territory.",
+          options: ['The', 'fierce', 'wolf', 'guarded', 'her', 'territory'],
+          correct: 'wolf',
+          explanation: "Wolf is a noun — it names a creature. (Territory is also a noun!)",
+          wrongExplanation: "A noun is a naming word — it names a person, place, thing, or creature. In this sentence, 'wolf' is a noun because it names a creature. 'Territory' is also a noun because it names a place. Look for words that answer 'what is it?' or 'who is it?'"
+        },
+        {
+          type: 'tap',
+          question: "Tap the VERB (an action or doing word):",
+          sentence: "The pack hunted through the snowy forest.",
+          options: ['The', 'pack', 'hunted', 'through', 'the', 'snowy', 'forest'],
+          correct: 'hunted',
+          explanation: "Hunted is a verb — it tells us what the pack did.",
+          wrongExplanation: "A verb is an action word or 'doing' word — it tells us what someone or something does, did, or will do. To find the verb, ask 'what did they do?' The pack 'hunted' — that's the action, so 'hunted' is the verb."
+        },
+        {
+          type: 'tap',
+          question: "Tap the ADJECTIVE (a describing word):",
+          sentence: "The silver wolf moved silently through the trees.",
+          options: ['The', 'silver', 'wolf', 'moved', 'silently', 'through', 'the', 'trees'],
+          correct: 'silver',
+          explanation: "Silver is an adjective — it describes what the wolf looks like.",
+          wrongExplanation: "An adjective is a describing word — it tells us more about a noun (what something is like). Adjectives often describe colour, size, shape, or feelings. 'Silver' describes what the wolf looks like, so it's an adjective. Ask yourself: 'what kind of wolf?' A silver wolf!"
+        },
+        {
+          type: 'multiple',
+          question: "In 'The young pup played happily', what word class is 'young'?",
+          options: ['Noun', 'Verb', 'Adjective', 'Adverb'],
+          correct: 'Adjective',
+          explanation: "Young describes the pup, so it's an adjective.",
+          wrongExplanation: "An adjective describes a noun — it tells us what something is like. 'Young' tells us about the pup (what kind of pup? a young pup), so it's an adjective. Remember: adjectives describe nouns, while adverbs describe verbs."
+        },
+        {
+          type: 'multiple',
+          question: "Which word is a VERB in: 'Luna protects her family fiercely'?",
+          options: ['Luna', 'protects', 'family', 'fiercely'],
+          correct: 'protects',
+          explanation: "Protects is what Luna does — it's the action, so it's a verb.",
+          wrongExplanation: "A verb tells us what someone or something does — it's the action word. Ask 'what does Luna do?' She protects. 'Protects' is the verb because it's the action being performed."
+        },
+        {
+          type: 'tap',
+          question: "Tap the NOUN:",
+          sentence: "Howling echoed across the frozen mountains.",
+          options: ['Howling', 'echoed', 'across', 'the', 'frozen', 'mountains'],
+          correct: 'mountains',
+          explanation: "Mountains is a noun — it names a place. (Howling can be a noun too in this sentence!)",
+          wrongExplanation: "A noun is a naming word for a person, place, thing, or idea. 'Mountains' names a place, so it's a noun. Interestingly, 'Howling' is also acting as a noun here (the thing that echoed). Words can sometimes be different word classes depending on how they're used!"
+        },
+        {
+          type: 'multiple',
+          question: "What type of word is 'swiftly' in: 'The wolf ran swiftly'?",
+          options: ['Noun', 'Verb', 'Adjective', 'Adverb'],
+          correct: 'Adverb',
+          explanation: "Swiftly describes HOW the wolf ran — it modifies the verb, making it an adverb.",
+          wrongExplanation: "An adverb describes a verb — it tells us how, when, or where something happens. Many adverbs end in '-ly'. 'Swiftly' tells us HOW the wolf ran, so it's an adverb. Remember: adjectives describe nouns, but adverbs describe verbs."
+        },
+        {
+          type: 'multiple',
+          question: "Which word is an ADJECTIVE?",
+          options: ['pack', 'ancient', 'howled', 'quickly'],
+          correct: 'ancient',
+          explanation: "Ancient is an adjective — it could describe a wolf, forest, or territory.",
+          wrongExplanation: "An adjective is a describing word that tells us about a noun. 'Ancient' can describe things (an ancient forest, an ancient wolf), so it's an adjective. 'Pack' is a noun, 'howled' is a verb, and 'quickly' is an adverb (it ends in -ly and describes how something is done)."
+        },
+        {
+          type: 'tap',
+          question: "Tap the VERB:",
+          sentence: "The determined wolf leapt gracefully over the stream.",
+          options: ['The', 'determined', 'wolf', 'leapt', 'gracefully', 'over', 'the', 'stream'],
+          correct: 'leapt',
+          explanation: "Leapt is the verb — it's the action the wolf performed.",
+          wrongExplanation: "A verb is an action word — it tells us what someone or something does. Ask 'what did the wolf do?' The wolf leapt. 'Leapt' is the verb because it's the action. ('Determined' describes the wolf, so it's an adjective.)"
+        },
+        {
+          type: 'multiple',
+          question: "In 'The exhausted wolves rested', which TWO words are adjectives?",
+          options: [
+            "The and wolves",
+            "exhausted and rested",
+            "There is only one adjective",
+            "wolves and rested"
+          ],
+          correct: "There is only one adjective",
+          explanation: "Only 'exhausted' is an adjective (describing the wolves). 'Rested' is a verb here — it's what they did.",
+          wrongExplanation: "An adjective describes a noun. Here, 'exhausted' describes the wolves (what kind of wolves? exhausted ones), so it's an adjective. But 'rested' is a verb — it tells us what the wolves did. Be careful: some words can be adjectives OR verbs depending on how they're used!"
+        },
+        {
+          type: 'tap',
+          question: "Tap the NOUN:",
+          sentence: "Courage helped the young wolf survive the winter.",
+          options: ['Courage', 'helped', 'the', 'young', 'wolf', 'survive', 'winter'],
+          correct: 'Courage',
+          explanation: "Courage is an abstract noun — it names a quality or idea, not just physical things.",
+          wrongExplanation: "A noun is a naming word. Most nouns name things you can see or touch (wolf, mountain), but abstract nouns name ideas, feelings, or qualities that you can't touch — like 'courage', 'happiness', or 'freedom'. 'Courage' is an abstract noun because it names a quality."
+        },
+        {
+          type: 'multiple',
+          question: "Which word class can 'run' belong to?",
+          options: [
+            "Only a verb",
+            "Only a noun", 
+            "Both verb and noun",
+            "Neither"
+          ],
+          correct: "Both verb and noun",
+          explanation: "'The wolf will run' (verb) vs 'The wolf went for a run' (noun). Many words can be different classes!",
+          wrongExplanation: "Many English words can belong to different word classes depending on how they're used in a sentence. 'Run' can be a verb ('I run fast') or a noun ('I went for a run'). The word class depends on the job the word is doing in that particular sentence."
+        }
+      ]
+    },
+    pronouns: {
+      name: 'Pronoun Peak',
+      description: 'Master pronouns, including relative and possessive',
+      icon: '⛰️',
+      questions: [
+        {
+          type: 'tap',
+          question: "Tap the PRONOUN (a word that replaces a noun):",
+          sentence: "Luna found the deer and she chased it through the forest.",
+          options: ['Luna', 'found', 'the', 'deer', 'and', 'she', 'chased', 'it', 'through', 'forest'],
+          correct: 'she',
+          explanation: "'She' is a pronoun that replaces 'Luna'. It stops us having to repeat the name.",
+          wrongExplanation: "A pronoun is a word that takes the place of a noun so we don't have to keep repeating it. Common pronouns include: I, you, he, she, it, we, they, me, him, her, us, them. In this sentence, 'she' replaces 'Luna' and 'it' replaces 'deer' — both are pronouns!"
+        },
+        {
+          type: 'multiple',
+          question: "Which is a RELATIVE PRONOUN?",
+          options: ['she', 'they', 'which', 'her'],
+          correct: 'which',
+          explanation: "Relative pronouns (who, which, that, whose, whom) introduce relative clauses and relate back to a noun.",
+          wrongExplanation: "A relative pronoun introduces a relative clause and relates back to a noun earlier in the sentence. The relative pronouns are: who, whom, whose, which, and that. 'She', 'they', and 'her' are personal pronouns, not relative pronouns. 'Which' is the relative pronoun here."
+        },
+        {
+          type: 'tap',
+          question: "Tap the RELATIVE PRONOUN:",
+          sentence: "The wolf who led the pack was the strongest.",
+          options: ['The', 'wolf', 'who', 'led', 'the', 'pack', 'was', 'strongest'],
+          correct: 'who',
+          explanation: "'Who' is a relative pronoun — it introduces information about the wolf and relates back to it.",
+          wrongExplanation: "A relative pronoun (who, whom, whose, which, that) introduces extra information about a noun and relates back to it. In this sentence, 'who' relates back to 'the wolf' and introduces the clause 'who led the pack'. Use 'who' for people and named animals."
+        },
+        {
+          type: 'multiple',
+          question: "In 'The territory that they guard is huge', what is 'that'?",
+          options: [
+            "A possessive pronoun",
+            "A relative pronoun",
+            "A personal pronoun",
+            "A noun"
+          ],
+          correct: "A relative pronoun",
+          explanation: "'That' introduces the relative clause 'that they guard' and relates back to 'territory'.",
+          wrongExplanation: "A relative pronoun introduces a relative clause and connects it back to a noun. The relative pronouns are: who, whom, whose, which, and that. Here, 'that' introduces the clause 'that they guard' and relates back to 'territory', so it's a relative pronoun."
+        },
+        {
+          type: 'multiple',
+          question: "Which is a POSSESSIVE PRONOUN?",
+          options: ['who', 'theirs', 'they', 'which'],
+          correct: 'theirs',
+          explanation: "Possessive pronouns (mine, yours, his, hers, its, ours, theirs) show ownership without a noun after them.",
+          wrongExplanation: "A possessive pronoun shows ownership and stands alone (without a noun after it). The possessive pronouns are: mine, yours, his, hers, its, ours, theirs. 'Theirs' means 'belonging to them' and stands alone. 'Who' and 'which' are relative pronouns, and 'they' is a personal pronoun."
+        },
+        {
+          type: 'tap',
+          question: "Tap the POSSESSIVE PRONOUN:",
+          sentence: "That den is not ours but the territory is theirs.",
+          options: ['That', 'den', 'is', 'not', 'ours', 'but', 'the', 'territory', 'theirs'],
+          correct: 'ours',
+          explanation: "'Ours' is a possessive pronoun — it shows the den doesn't belong to us. 'Theirs' is also possessive!",
+          wrongExplanation: "A possessive pronoun shows ownership and stands alone without a noun after it. The possessive pronouns are: mine, yours, his, hers, its, ours, theirs. Both 'ours' and 'theirs' in this sentence are possessive pronouns — they show who things belong to."
+        },
+        {
+          type: 'multiple',
+          question: "'My' and 'mine' — what's the difference?",
+          options: [
+            "They mean the same thing",
+            "'My' comes before a noun, 'mine' stands alone",
+            "'Mine' comes before a noun, 'my' stands alone",
+            "'My' is for wolves, 'mine' is for other animals"
+          ],
+          correct: "'My' comes before a noun, 'mine' stands alone",
+          explanation: "'My territory' (before noun) vs 'The territory is mine' (stands alone as possessive pronoun).",
+          wrongExplanation: "'My' and 'mine' both show possession, but they work differently. 'My' is a possessive determiner — it comes before a noun ('my territory'). 'Mine' is a possessive pronoun — it stands alone without a noun after it ('the territory is mine'). Same meaning, different jobs!"
+        },
+        {
+          type: 'tap',
+          question: "Tap the RELATIVE PRONOUN:",
+          sentence: "The prey whose scent they followed had escaped.",
+          options: ['The', 'prey', 'whose', 'scent', 'they', 'followed', 'had', 'escaped'],
+          correct: 'whose',
+          explanation: "'Whose' is a relative pronoun showing possession — it relates back to 'prey' and introduces more information.",
+          wrongExplanation: "A relative pronoun (who, whom, whose, which, that) introduces a relative clause. 'Whose' is special — it's a relative pronoun that also shows possession. Here, 'whose' relates back to 'prey' and tells us about the prey's scent. It introduces the clause 'whose scent they followed'."
+        },
+        {
+          type: 'multiple',
+          question: "Which sentence uses a relative pronoun correctly?",
+          options: [
+            "The wolf which howled was Luna.",
+            "The wolf who howled was Luna.",
+            "Both are correct",
+            "Neither is correct"
+          ],
+          correct: "The wolf who howled was Luna.",
+          explanation: "Use 'who' for people and animals with names/personalities. 'Which' is usually for things.",
+          wrongExplanation: "When using relative pronouns: use 'who' for people and animals with names or personalities, and use 'which' for things. Since Luna is a named wolf with a personality, we use 'who': 'The wolf who howled was Luna.'"
+        },
+        {
+          type: 'multiple',
+          question: "In 'The pups played with their mother. She watched them carefully', how many pronouns are there?",
+          options: ['One', 'Two', 'Three', 'Four'],
+          correct: 'Three',
+          explanation: "'Their' (possessive), 'She' (personal), and 'them' (personal) — three pronouns in total!",
+          wrongExplanation: "A pronoun replaces a noun. Count them: 'their' (possessive pronoun/determiner showing the mother belongs to the pups), 'She' (personal pronoun replacing 'mother'), and 'them' (personal pronoun replacing 'pups'). That's three pronouns!"
+        }
+      ]
+    },
+    conjunctions: {
+      name: 'Conjunction Creek',
+      description: 'Connect ideas with coordinating and subordinating conjunctions',
+      icon: '🌊',
+      questions: [
+        {
+          type: 'tap',
+          question: "Tap the COORDINATING CONJUNCTION:",
+          sentence: "The wolf was tired but she kept running.",
+          options: ['The', 'wolf', 'was', 'tired', 'but', 'she', 'kept', 'running'],
+          correct: 'but',
+          explanation: "'But' is a coordinating conjunction — it joins two equal clauses. Remember: FANBOYS (For, And, Nor, But, Or, Yet, So).",
+          wrongExplanation: "A coordinating conjunction joins two equal parts of a sentence. Remember FANBOYS: For, And, Nor, But, Or, Yet, So. These are the seven coordinating conjunctions! 'But' joins two equal clauses here: 'The wolf was tired' and 'she kept running'."
+        },
+        {
+          type: 'multiple',
+          question: "Which word is a SUBORDINATING conjunction?",
+          options: ['and', 'but', 'because', 'or'],
+          correct: 'because',
+          explanation: "'Because' is subordinating — it introduces a clause that depends on the main clause.",
+          wrongExplanation: "A subordinating conjunction introduces a subordinate clause (one that can't stand alone). Common subordinating conjunctions include: because, although, when, while, if, unless, until, before, after. 'And', 'but', and 'or' are coordinating conjunctions (FANBOYS). 'Because' is subordinating."
+        },
+        {
+          type: 'tap',
+          question: "Tap the SUBORDINATING CONJUNCTION:",
+          sentence: "The pack waited until darkness fell over the valley.",
+          options: ['The', 'pack', 'waited', 'until', 'darkness', 'fell', 'over', 'the', 'valley'],
+          correct: 'until',
+          explanation: "'Until' is a subordinating conjunction — it starts a subordinate clause explaining when they waited.",
+          wrongExplanation: "A subordinating conjunction starts a subordinate clause — a clause that depends on the main clause. Subordinating conjunctions include: until, because, although, when, while, if, unless, before, after. 'Until' introduces 'until darkness fell over the valley'."
+        },
+        {
+          type: 'multiple',
+          question: "FANBOYS helps us remember coordinating conjunctions. What does it stand for?",
+          options: [
+            "For, And, Nor, But, Or, Yet, So",
+            "First, After, Next, Before, Or, Yet, Since",
+            "For, Although, Neither, But, Or, Yes, So",
+            "Finally, And, Not, But, Over, Yes, So"
+          ],
+          correct: "For, And, Nor, But, Or, Yet, So",
+          explanation: "FANBOYS: For, And, Nor, But, Or, Yet, So — the seven coordinating conjunctions!",
+          wrongExplanation: "FANBOYS is a helpful way to remember the seven coordinating conjunctions: For, And, Nor, But, Or, Yet, So. These conjunctions join equal parts of a sentence. Any other words in the options (like 'although', 'before', 'after') are subordinating conjunctions, not coordinating ones."
+        },
+        {
+          type: 'multiple',
+          question: "What's the difference between coordinating and subordinating conjunctions?",
+          options: [
+            "Coordinating are longer words",
+            "Coordinating join equal parts; subordinating create dependent clauses",
+            "Subordinating only come at the start of sentences",
+            "There is no difference"
+          ],
+          correct: "Coordinating join equal parts; subordinating create dependent clauses",
+          explanation: "Coordinating conjunctions (and, but, or) join equals. Subordinating (because, although, when) make one clause depend on another.",
+          wrongExplanation: "Coordinating conjunctions (FANBOYS: for, and, nor, but, or, yet, so) join two equal, independent parts. Subordinating conjunctions (because, although, when, if, until, etc.) create a dependent clause that relies on the main clause to make sense."
+        },
+        {
+          type: 'tap',
+          question: "Tap the COORDINATING CONJUNCTION:",
+          sentence: "Luna could stay and rest or she could join the hunt.",
+          options: ['Luna', 'could', 'stay', 'and', 'rest', 'or', 'she', 'join', 'the', 'hunt'],
+          correct: 'or',
+          explanation: "'Or' is coordinating (FANBOYS!) — it gives Luna two equal choices. 'And' is also coordinating!",
+          wrongExplanation: "Coordinating conjunctions are FANBOYS: For, And, Nor, But, Or, Yet, So. They join equal parts. In this sentence, both 'and' and 'or' are coordinating conjunctions! 'Or' gives two equal choices; 'and' joins 'stay' and 'rest'."
+        },
+        {
+          type: 'multiple',
+          question: "Which is a subordinating conjunction?",
+          options: ['yet', 'although', 'so', 'nor'],
+          correct: 'although',
+          explanation: "'Although' is subordinating — it introduces a dependent clause. The others (yet, so, nor) are coordinating (FANBOYS).",
+          wrongExplanation: "Subordinating conjunctions introduce clauses that can't stand alone. They include: although, because, when, while, if, unless, until, before, after. 'Yet', 'so', and 'nor' are all part of FANBOYS — they're coordinating conjunctions. 'Although' is the subordinating conjunction."
+        },
+        {
+          type: 'tap',
+          question: "Tap the SUBORDINATING CONJUNCTION:",
+          sentence: "The wolves howled whenever the moon was bright.",
+          options: ['The', 'wolves', 'howled', 'whenever', 'the', 'moon', 'was', 'bright'],
+          correct: 'whenever',
+          explanation: "'Whenever' is subordinating — it introduces a clause that tells us when the wolves howled.",
+          wrongExplanation: "A subordinating conjunction introduces a dependent clause. 'Whenever' (like 'when', 'while', 'because', 'although', 'if', 'until') is a subordinating conjunction. It starts the clause 'whenever the moon was bright', which depends on the main clause."
+        },
+        {
+          type: 'multiple',
+          question: "In 'The alpha led the pack, for she knew the way', what type of conjunction is 'for'?",
+          options: [
+            "Subordinating",
+            "Coordinating",
+            "It's not a conjunction here",
+            "Relative"
+          ],
+          correct: "Coordinating",
+          explanation: "'For' meaning 'because' is actually a coordinating conjunction! It's the F in FANBOYS.",
+          wrongExplanation: "This is a tricky one! 'For' can mean 'because', but it's still a coordinating conjunction — it's the F in FANBOYS (For, And, Nor, But, Or, Yet, So). Even though it gives a reason like 'because', it joins two independent clauses equally."
+        },
+        {
+          type: 'multiple',
+          question: "Which sentence uses a subordinating conjunction?",
+          options: [
+            "The wolf ran and the deer fled.",
+            "Luna is fast yet careful.",
+            "Although it was cold, they kept hunting.",
+            "The pack was hungry so they hunted."
+          ],
+          correct: "Although it was cold, they kept hunting.",
+          explanation: "'Although' is subordinating — it creates a subordinate clause. 'And', 'yet', and 'so' are all coordinating.",
+          wrongExplanation: "Subordinating conjunctions (although, because, when, if, until, etc.) create dependent clauses. Coordinating conjunctions are FANBOYS (for, and, nor, but, or, yet, so). 'And', 'yet', and 'so' are all FANBOYS! Only 'although' is subordinating."
+        }
+      ]
+    },
+    affixes: {
+      name: 'Prefix & Suffix Summit',
+      description: 'Discover how prefixes and suffixes change word meanings',
+      icon: '🗻',
+      questions: [
+        {
+          type: 'multiple',
+          question: "What does the PREFIX 'un-' do to a word?",
+          options: [
+            "Makes it plural",
+            "Makes it mean the opposite",
+            "Makes it past tense",
+            "Makes it bigger"
+          ],
+          correct: "Makes it mean the opposite",
+          explanation: "Un- reverses meaning: happy → unhappy, known → unknown, like → unlike.",
+          wrongExplanation: "A prefix is a group of letters added to the beginning of a word to change its meaning. 'Un-' is a prefix that means 'not' or 'the opposite of'. When you add 'un-' to 'happy', you get 'unhappy' (not happy). The prefix reverses the meaning."
+        },
+        {
+          type: 'multiple',
+          question: "In 'The wolf moved silently', what is the SUFFIX in 'silently'?",
+          options: ['-ent', '-ly', '-ily', 'silent'],
+          correct: '-ly',
+          explanation: "'-ly' is added to 'silent' to make it an adverb describing how the wolf moved.",
+          wrongExplanation: "A suffix is a group of letters added to the end of a word to change its meaning or word class. In 'silently', the root word is 'silent' and '-ly' is added to the end. The suffix '-ly' often turns adjectives into adverbs (describing how something is done)."
+        },
+        {
+          type: 'multiple',
+          question: "What does the prefix 're-' mean in 'The pack returned to their den'?",
+          options: ['Not', 'Again/back', 'Before', 'Very'],
+          correct: 'Again/back',
+          explanation: "'Re-' means again or back. Returned = turned back, going to where they were before.",
+          wrongExplanation: "A prefix is added to the beginning of a word to change its meaning. The prefix 're-' means 'again' or 'back'. So 'return' means to go back, 'replay' means to play again, and 'reread' means to read again."
+        },
+        {
+          type: 'tap',
+          question: "Tap the word with a PREFIX:",
+          sentence: "It was impossible for the wolf to cross the frozen river.",
+          options: ['It', 'was', 'impossible', 'for', 'the', 'wolf', 'to', 'cross', 'frozen', 'river'],
+          correct: 'impossible',
+          explanation: "'Im-' is a prefix meaning 'not'. Impossible = not possible.",
+          wrongExplanation: "A prefix is a group of letters added to the beginning of a word to change its meaning. Look for words where you can spot a root word with something added at the start. 'Impossible' has the prefix 'im-' (meaning 'not') added to 'possible'. So impossible means 'not possible'."
+        },
+        {
+          type: 'multiple',
+          question: "What does the suffix '-less' mean in 'fearless'?",
+          options: ['Full of', 'Without', 'More', 'Like'],
+          correct: 'Without',
+          explanation: "'-less' means without. A fearless wolf is one without fear!",
+          wrongExplanation: "A suffix is added to the end of a word to change its meaning. The suffix '-less' means 'without'. So 'fearless' means 'without fear', 'hopeless' means 'without hope', and 'careless' means 'without care'."
+        },
+        {
+          type: 'multiple',
+          question: "Which word has both a prefix AND a suffix?",
+          options: ['unhappy', 'running', 'uncomfortable', 'jumped'],
+          correct: 'uncomfortable',
+          explanation: "Un- (prefix meaning not) + comfort + -able (suffix meaning can be). Uncomfortable!",
+          wrongExplanation: "A prefix goes at the beginning of a word; a suffix goes at the end. 'Uncomfortable' has both: 'un-' (prefix meaning 'not') + 'comfort' (root word) + '-able' (suffix meaning 'can be'). 'Unhappy' only has a prefix, and 'running' and 'jumped' only have suffixes."
+        },
+        {
+          type: 'multiple',
+          question: "What does the prefix 'dis-' mean?",
+          options: ['Very', 'Not/opposite of', 'Before', 'After'],
+          correct: 'Not/opposite of',
+          explanation: "'Dis-' means not or the opposite. Disappear = not appear, disobey = not obey.",
+          wrongExplanation: "A prefix is added to the start of a word to change its meaning. 'Dis-' is a prefix meaning 'not' or 'the opposite of'. So 'disagree' means 'not agree', 'disappear' means 'not appear', and 'disobey' means 'not obey'."
+        },
+        {
+          type: 'tap',
+          question: "Tap the word with a SUFFIX:",
+          sentence: "The powerful wolf showed great strength and determination.",
+          options: ['The', 'powerful', 'wolf', 'showed', 'great', 'strength', 'and', 'determination'],
+          correct: 'powerful',
+          explanation: "'Powerful' has the suffix '-ful' meaning 'full of'. Full of power!",
+          wrongExplanation: "A suffix is a group of letters added to the end of a word to change its meaning. Look for words where you can spot a root word with something added at the end. 'Powerful' has the suffix '-ful' (meaning 'full of') added to 'power'. So powerful means 'full of power'."
+        },
+        {
+          type: 'multiple',
+          question: "If 'pre-' means before, what does 'prehistoric' mean?",
+          options: [
+            "After history",
+            "During history",
+            "Before recorded history",
+            "About history"
+          ],
+          correct: "Before recorded history",
+          explanation: "Pre- (before) + historic = before recorded history. Wolves are prehistoric animals!",
+          wrongExplanation: "A prefix changes a word's meaning. 'Pre-' is a prefix meaning 'before'. So 'prehistoric' means 'before history' (before recorded history). Other examples: 'preview' (view before), 'prepay' (pay before), 'preheat' (heat before)."
+        },
+        {
+          type: 'multiple',
+          question: "What suffix turns 'hunt' into 'hunter'?",
+          options: ['-er', '-or', '-ist', '-ment'],
+          correct: '-er',
+          explanation: "'-er' often means 'one who does'. A hunter is one who hunts!",
+          wrongExplanation: "A suffix is added to the end of a word to change its meaning. The suffix '-er' often means 'a person who does something'. Hunt + -er = hunter (one who hunts). Similarly: teach + -er = teacher, run + -er = runner."
+        },
+        {
+          type: 'multiple',
+          question: "In 'The wolf was unable to find food', what is the root word?",
+          options: ['un', 'unable', 'able', 'find'],
+          correct: 'able',
+          explanation: "'Able' is the root word. 'Un-' is the prefix that changes its meaning to 'not able'.",
+          wrongExplanation: "The root word is the main word before any prefixes or suffixes are added. In 'unable', if we remove the prefix 'un-', we're left with 'able' — that's the root word. The prefix 'un-' has been added to change its meaning to 'not able'."
+        },
+        {
+          type: 'multiple',
+          question: "Which prefix would make 'visible' mean 'cannot be seen'?",
+          options: ['un-', 'in-', 'dis-', 're-'],
+          correct: 'in-',
+          explanation: "'Invisible' uses 'in-' (which becomes 'in-' before 'v') to mean 'not visible'.",
+          wrongExplanation: "Different prefixes mean 'not', but they're used with different words. 'In-' is the prefix used with 'visible' to make 'invisible' (not visible/cannot be seen). Note: 'in-' can change to 'im-' before some letters (like 'impossible')."
+        }
+      ]
+    },
+    commas: {
+      name: 'Comma Cave',
+      description: 'Learn where to pause with commas',
+      icon: '🦇',
+      questions: [
+        {
+          type: 'multiple',
+          question: "Which sentence uses commas correctly in a LIST?",
+          options: [
+            "Wolves eat deer, rabbits, and elk.",
+            "Wolves eat deer rabbits and elk.",
+            "Wolves eat, deer, rabbits, and, elk.",
+            "Wolves, eat deer rabbits and elk."
+          ],
+          correct: "Wolves eat deer, rabbits, and elk.",
+          explanation: "Commas separate items in a list. The comma before 'and' (Oxford comma) is optional but helpful!",
+          wrongExplanation: "When writing a list of three or more items, use commas to separate each item. Put a comma after each item except the last one. For example: 'deer, rabbits, and elk'. Don't put commas in random places — only between the items in your list."
+        },
+        {
+          type: 'multiple',
+          question: "Where should the comma go after a FRONTED ADVERBIAL?",
+          options: [
+            "Without warning the, wolf pounced.",
+            "Without warning, the wolf pounced.",
+            "Without, warning the wolf pounced.",
+            "No comma needed."
+          ],
+          correct: "Without warning, the wolf pounced.",
+          explanation: "Fronted adverbials need a comma after them. 'Without warning' tells us how/when the action happened.",
+          wrongExplanation: "A fronted adverbial is a word or phrase at the start of a sentence that tells us how, when, or where something happens. It always needs a comma after it to separate it from the main clause. 'Without warning' is a fronted adverbial, so we write: 'Without warning, the wolf pounced.'"
+        },
+        {
+          type: 'multiple',
+          question: "Which fronted adverbial is punctuated correctly?",
+          options: [
+            "Silently, the pack approached their prey.",
+            "Silently the pack, approached their prey.",
+            "Silently the pack approached, their prey.",
+            "Silently the pack approached their prey."
+          ],
+          correct: "Silently, the pack approached their prey.",
+          explanation: "'Silently' is a fronted adverbial — it needs a comma right after it.",
+          wrongExplanation: "A fronted adverbial comes at the start of a sentence and tells us how, when, or where. It must be followed by a comma. 'Silently' is a fronted adverbial (it tells us how), so the comma goes immediately after it: 'Silently, the pack approached their prey.'"
+        },
+        {
+          type: 'multiple',
+          question: "In 'The wolf, who was called Luna, led the hunt', why are there commas?",
+          options: [
+            "It's a list",
+            "It's a fronted adverbial",
+            "It's extra information (parenthesis)",
+            "It's direct speech"
+          ],
+          correct: "It's extra information (parenthesis)",
+          explanation: "'Who was called Luna' is extra information that could be removed. Commas show it's an embedded clause.",
+          wrongExplanation: "When extra information is added in the middle of a sentence (called parenthesis), we use a pair of commas around it. 'Who was called Luna' is extra information about the wolf — if you removed it, the sentence would still make sense: 'The wolf led the hunt.' The commas show this is additional, removable information."
+        },
+        {
+          type: 'multiple',
+          question: "Which sentence needs a comma?",
+          options: [
+            "The wolf howled loudly.",
+            "Before dawn the pack set off.",
+            "Luna ran quickly.",
+            "The deer escaped."
+          ],
+          correct: "Before dawn the pack set off.",
+          explanation: "'Before dawn' is a fronted adverbial — it needs a comma: 'Before dawn, the pack set off.'",
+          wrongExplanation: "A fronted adverbial is a word or phrase at the start of a sentence that tells us how, when, or where. It needs a comma after it. 'Before dawn' tells us when the pack set off — it's a fronted adverbial, so it needs a comma: 'Before dawn, the pack set off.'"
+        },
+        {
+          type: 'multiple',
+          question: "Where should commas go in: 'The alpha a powerful grey wolf watched over the pack'?",
+          options: [
+            "The alpha, a powerful grey wolf watched over the pack.",
+            "The alpha a powerful grey wolf, watched over the pack.",
+            "The alpha, a powerful grey wolf, watched over the pack.",
+            "No commas needed."
+          ],
+          correct: "The alpha, a powerful grey wolf, watched over the pack.",
+          explanation: "'A powerful grey wolf' is extra information about the alpha. It needs commas on both sides.",
+          wrongExplanation: "When extra information (parenthesis) is inserted into a sentence, it needs commas on both sides. 'A powerful grey wolf' is extra information about the alpha — we could remove it and the sentence would still work. So we need a comma before and after: 'The alpha, a powerful grey wolf, watched over the pack.'"
+        },
+        {
+          type: 'multiple',
+          question: "Which is NOT a reason to use a comma?",
+          options: [
+            "After a fronted adverbial",
+            "To separate items in a list",
+            "Before every 'and'",
+            "Around extra information"
+          ],
+          correct: "Before every 'and'",
+          explanation: "We don't always need commas before 'and'. Only in lists or between main clauses.",
+          wrongExplanation: "Commas are used: after fronted adverbials, to separate items in a list, and around extra information (parenthesis). We do NOT put a comma before every 'and' — only in lists or when joining two main clauses. For example, 'The wolf howled and the pack followed' doesn't need a comma."
+        },
+        {
+          type: 'multiple',
+          question: "Choose the correct comma use:",
+          options: [
+            "The wolf ran, fast.",
+            "Cautiously, the pup approached.",
+            "Luna, howled.",
+            "The pack, hunted deer."
+          ],
+          correct: "Cautiously, the pup approached.",
+          explanation: "'Cautiously' is a fronted adverbial and needs a comma after it. The others incorrectly break up the sentence.",
+          wrongExplanation: "A fronted adverbial at the start of a sentence needs a comma after it. 'Cautiously' tells us how the pup approached — it's a fronted adverbial, so it needs a comma. The other sentences have commas in the wrong places, breaking up the subject and verb incorrectly."
+        },
+        {
+          type: 'multiple',
+          question: "'With great speed, the wolf chased the rabbit.' What is 'With great speed'?",
+          options: [
+            "A subordinate clause",
+            "A fronted adverbial",
+            "The subject",
+            "Direct speech"
+          ],
+          correct: "A fronted adverbial",
+          explanation: "'With great speed' is a fronted adverbial — it tells us how the wolf chased and comes before the main clause.",
+          wrongExplanation: "A fronted adverbial is a word or phrase at the start of a sentence that tells us how, when, or where something happens. 'With great speed' tells us HOW the wolf chased (quickly), so it's a fronted adverbial. That's why it has a comma after it."
+        },
+        {
+          type: 'multiple',
+          question: "How many commas are needed? 'The old wolf the pack's former leader rested in the shade'",
+          options: ['None', 'One', 'Two', 'Three'],
+          correct: 'Two',
+          explanation: "'The pack's former leader' is extra information needing commas around it: 'The old wolf, the pack's former leader, rested in the shade.'",
+          wrongExplanation: "When extra information (parenthesis) is inserted into a sentence, it needs a comma on each side — that's two commas. 'The pack's former leader' is extra information about the old wolf, so we need commas before and after it to separate it from the main sentence."
+        }
+      ]
+    },
+    directspeech: {
+      name: 'Speech Cavern',
+      description: 'Master the art of direct speech and speech marks',
+      icon: '💬',
+      questions: [
+        {
+          type: 'multiple',
+          question: "Which sentence punctuates direct speech correctly?",
+          options: [
+            'Luna said, "Follow me!"',
+            'Luna said "Follow me"!',
+            'Luna said Follow me!',
+            '"Luna said, Follow me!"'
+          ],
+          correct: 'Luna said, "Follow me!"',
+          explanation: "Speech marks go around the spoken words only. The comma comes after 'said' but before the speech marks.",
+          wrongExplanation: "Direct speech is the exact words someone says, shown in speech marks (\" \"). The speech marks go around ONLY the spoken words. Before opening the speech marks, use a comma after words like 'said' or 'asked'. The correct format is: Luna said, \"Follow me!\""
+        },
+        {
+          type: 'multiple',
+          question: "Where does the punctuation go at the END of speech?",
+          options: [
+            "After the speech marks",
+            "Before the closing speech marks",
+            "It doesn't matter",
+            "There's no punctuation"
+          ],
+          correct: "Before the closing speech marks",
+          explanation: "Punctuation (! ? . ,) goes inside the speech marks: \"Hello!\" not \"Hello\"!",
+          wrongExplanation: "In direct speech, the punctuation at the end (full stop, exclamation mark, question mark, or comma) always goes INSIDE the closing speech marks. Write \"Hello!\" not \"Hello\"! The punctuation is part of what's being said."
+        },
+        {
+          type: 'multiple',
+          question: "Which is correct?",
+          options: [
+            '"Come quickly", whispered the wolf.',
+            '"Come quickly," whispered the wolf.',
+            '"Come quickly" whispered, the wolf.',
+            '"Come quickly whispered the wolf."'
+          ],
+          correct: '"Come quickly," whispered the wolf.',
+          explanation: "When speech comes first, use a comma inside the speech marks (unless it's ! or ?), then the reporting clause.",
+          wrongExplanation: "When the speech comes before 'said/whispered/asked', you need a comma INSIDE the closing speech marks (unless the speech ends with ! or ?). Then write who said it. The comma goes inside: \"Come quickly,\" whispered the wolf."
+        },
+        {
+          type: 'multiple',
+          question: "What's missing? 'The alpha warned Stay close to the pack'",
+          options: [
+            "Just speech marks",
+            "Speech marks and a comma",
+            "Just a comma",
+            "A full stop"
+          ],
+          correct: "Speech marks and a comma",
+          explanation: "It should be: The alpha warned, \"Stay close to the pack.\"",
+          wrongExplanation: "Direct speech needs: (1) speech marks around the spoken words, (2) a comma after 'said/warned/asked' before the speech marks open, and (3) punctuation inside at the end. It should be: The alpha warned, \"Stay close to the pack.\""
+        },
+        {
+          type: 'multiple',
+          question: "Where should the question mark go?",
+          options: [
+            '"Where are the pups"? asked Luna.',
+            '"Where are the pups?" asked Luna.',
+            '"Where are the pups," asked Luna?',
+            '"Where are the pups" asked Luna?'
+          ],
+          correct: '"Where are the pups?" asked Luna.',
+          explanation: "The question mark goes inside the speech marks because it's part of what Luna asked.",
+          wrongExplanation: "In direct speech, punctuation goes INSIDE the speech marks. The question mark is part of what Luna asked, so it goes inside: \"Where are the pups?\" When speech ends with ? or !, you don't need a comma as well."
+        },
+        {
+          type: 'multiple',
+          question: "Why do we start a new line for each new speaker?",
+          options: [
+            "To make it look nice",
+            "It's the law",
+            "To make it clear who is speaking",
+            "We don't need to"
+          ],
+          correct: "To make it clear who is speaking",
+          explanation: "A new line for each speaker helps readers follow the conversation.",
+          wrongExplanation: "When writing dialogue (conversation), we start a new line each time a different person speaks. This is a rule of direct speech that helps readers follow who is saying what. It makes conversations much easier to read and understand."
+        },
+        {
+          type: 'multiple',
+          question: "Which sentence is correct?",
+          options: [
+            '"I hear something," Luna said, "in the forest."',
+            '"I hear something", Luna said, "in the forest".',
+            '"I hear something" Luna said "in the forest."',
+            '"I hear something, Luna said, in the forest."'
+          ],
+          correct: '"I hear something," Luna said, "in the forest."',
+          explanation: "When speech is interrupted, commas and speech marks go around the interruption. Full stop at the very end.",
+          wrongExplanation: "When speech is split (interrupted by 'said'), you need: comma inside first closing speech marks, then who said it, then comma, then open speech marks again. The final punctuation goes inside the last speech marks: \"I hear something,\" Luna said, \"in the forest.\""
+        },
+        {
+          type: 'multiple',
+          question: "What punctuation comes BEFORE opening speech marks?",
+          options: [
+            "Always a comma",
+            "Always a colon",
+            "A comma or nothing, depending on the sentence",
+            "Always a full stop"
+          ],
+          correct: "A comma or nothing, depending on the sentence",
+          explanation: "Usually a comma (Luna said, \"...\") but sometimes nothing if the speech flows naturally.",
+          wrongExplanation: "Before opening speech marks, you usually use a comma after reporting words like 'said' or 'asked'. For example: Luna said, \"Hello.\" However, sometimes the speech flows naturally without a comma. A comma is most common."
+        },
+        {
+          type: 'multiple',
+          question: "'Run!' howled Luna. Why is there no comma after 'Run'?",
+          options: [
+            "It's a mistake",
+            "The exclamation mark replaces the comma",
+            "Commas are never used in speech",
+            "Because 'howled' comes after"
+          ],
+          correct: "The exclamation mark replaces the comma",
+          explanation: "! and ? replace the comma at the end of speech. We write \"Run!\" not \"Run!,\"",
+          wrongExplanation: "In direct speech, when the spoken words end with an exclamation mark (!) or question mark (?), these replace the comma. You don't need both! Write \"Run!\" howled Luna — not \"Run!,\" howled Luna."
+        },
+        {
+          type: 'multiple',
+          question: "Which shows TWO speakers correctly?",
+          options: [
+            '"Wait," said Luna. "I can\'t," replied Shadow.',
+            '"Wait," said Luna, "I can\'t," replied Shadow.',
+            '"Wait," said Luna.\n"I can\'t," replied Shadow.',
+            '"Wait, said Luna. I can\'t, replied Shadow."'
+          ],
+          correct: '"Wait," said Luna.\n"I can\'t," replied Shadow.',
+          explanation: "Each speaker gets a new line. This makes conversations easier to follow.",
+          wrongExplanation: "When writing dialogue with multiple speakers, each new speaker starts on a new line. This is a key rule of direct speech that helps readers know when a different character is talking. Each speech still needs its own speech marks and punctuation."
+        }
+      ]
+    }
+  };
+
+  // Territory wolves with stats templates
+  const territoryWolves = {
+    apostrophes: { 
+      role: 'Scout', 
+      fact: 'Wolves can run up to 40 mph in short bursts!',
+      statTemplate: { primary: 'swiftness', secondary: 'focus' }
+    },
+    subordinate: { 
+      role: 'Tracker', 
+      fact: 'Wolves have about 200 million scent cells — humans have only 5 million!',
+      statTemplate: { primary: 'wisdom', secondary: 'focus' }
+    },
+    wordclasses: { 
+      role: 'Hunter', 
+      fact: 'A wolf pack can travel 30 miles in a single day.',
+      statTemplate: { primary: 'courage', secondary: 'swiftness' }
+    },
+    pronouns: { 
+      role: 'Guardian', 
+      fact: 'Wolf pups are born deaf and blind but grow quickly.',
+      statTemplate: { primary: 'courage', secondary: 'kindness' }
+    },
+    conjunctions: { 
+      role: 'Howler', 
+      fact: "A wolf's howl can be heard up to 10 miles away!",
+      statTemplate: { primary: 'kindness', secondary: 'wisdom' }
+    },
+    affixes: { 
+      role: 'Shadow', 
+      fact: 'Wolves can swim distances of up to 8 miles.',
+      statTemplate: { primary: 'swiftness', secondary: 'courage' }
+    },
+    commas: { 
+      role: 'Elder', 
+      fact: 'Wolves can live up to 13 years in the wild.',
+      statTemplate: { primary: 'wisdom', secondary: 'kindness' }
+    },
+    directspeech: { 
+      role: 'Storyteller', 
+      fact: 'Wolves use body language, scent, and sounds to communicate with their pack.',
+      statTemplate: { primary: 'kindness', secondary: 'wisdom' }
+    }
+  };
+
+  // Calculate treats earned from a territory completion
+  const calculateTreatsEarned = (finalScore, totalQuestions) => {
+    const percentage = finalScore / totalQuestions;
+    const earned = {
+      meatChunk: Math.floor(finalScore / 2), // 1 treat per 2 correct answers
+      wisdomBerry: 0,
+      swiftMeat: 0,
+      goldenKibble: 0,
+      bonusTreats: 0
+    };
+    
+    // Bonus treats for high scores
+    if (percentage >= 0.9) {
+      earned.bonusTreats = 3;
+      earned.meatChunk += 3;
+      // 90%+ also earns a special treat (randomly wisdom berry or swift meat)
+      if (Math.random() > 0.5) {
+        earned.wisdomBerry = 1;
+      } else {
+        earned.swiftMeat = 1;
+      }
+    } else if (percentage >= 0.7) {
+      earned.bonusTreats = 1;
+      earned.meatChunk += 1;
+    }
+    
+    return earned;
+  };
+
+  const checkTerritoryReward = (territoryKey, finalScore, totalQuestions) => {
+    const passed = finalScore >= totalQuestions * 0.7;
+    const alreadyCompleted = completedTerritories[territoryKey];
+    
+    // Calculate treats regardless of pass/fail
+    const treatsEarned = calculateTreatsEarned(finalScore, totalQuestions);
+    setPendingTreats(treatsEarned);
+    
+    // Add treats to inventory
+    setTreats(prev => ({
+      meatChunk: prev.meatChunk + treatsEarned.meatChunk,
+      wisdomBerry: prev.wisdomBerry + treatsEarned.wisdomBerry,
+      swiftMeat: prev.swiftMeat + treatsEarned.swiftMeat,
+      goldenKibble: prev.goldenKibble + treatsEarned.goldenKibble
+    }));
+    
+    if (passed && !alreadyCompleted) {
+      const wolfReward = territoryWolves[territoryKey];
+      if (wolfReward) {
+        // Generate stats for the new wolf
+        const newWolfStats = generateWolfStats(wolfReward.role);
+        setPendingWolf({
+          ...wolfReward,
+          stats: newWolfStats,
+          territory: territoryKey
+        });
+        setShowPackReward(true);
+      }
+    }
+  };
+
+  const addWolfToPack = () => {
+    if (pendingWolf && newWolfName.trim()) {
+      const newWolf = {
+        id: `wolf_${Date.now()}`,
+        name: newWolfName.trim(),
+        role: pendingWolf.role,
+        fact: pendingWolf.fact,
+        earned: true,
+        stats: pendingWolf.stats,
+        territory: pendingWolf.territory
+      };
+      setPack([...pack, newWolf]);
+      setCompletedTerritories({ ...completedTerritories, [pendingWolf.territory]: true });
+      setShowPackReward(false);
+      setNewWolfName('');
+      setPendingWolf(null);
+    }
+  };
+
+  const handleAnswer = (answer) => {
+    if (showFeedback) return;
+    setSelectedAnswer(answer);
+    setShowFeedback(true);
+    
+    const currentQ = territories[currentTerritory].questions[currentQuestionIndex];
+    if (answer === currentQ.correct) {
+      setScore(score + 1);
+    }
+  };
+
+  const nextQuestion = () => {
+    const questions = territories[currentTerritory].questions;
+    if (currentQuestionIndex < questions.length - 1) {
+      setCurrentQuestionIndex(currentQuestionIndex + 1);
+      setSelectedAnswer(null);
+      setShowFeedback(false);
+    } else {
+      // Territory complete
+      setTerritoryScores({
+        ...territoryScores,
+        [currentTerritory]: { score, total: questions.length }
+      });
+      
+      // Check for wolf reward and calculate treats
+      checkTerritoryReward(currentTerritory, score, questions.length);
+      
+      setScreen('complete');
+    }
+  };
+
+  const startTerritory = (territory) => {
+    setCurrentTerritory(territory);
+    setCurrentQuestionIndex(0);
+    setScore(0);
+    setSelectedAnswer(null);
+    setShowFeedback(false);
+    setPendingTreats(null);
+    setScreen('quiz');
+  };
+
+  // Render stat bar component
+  const StatBar = ({ stat, value, showLabel = true }) => {
+    const info = statInfo[stat];
+    const percentage = (value / 10) * 100;
+    
+    return (
+      <div className="flex items-center gap-2">
+        {showLabel && (
+          <span className="text-lg" title={info.description}>{info.icon}</span>
+        )}
+        <div className="flex-1 bg-gray-200 rounded-full h-2">
+          <div 
+            className="bg-amber-500 h-2 rounded-full transition-all"
+            style={{ width: `${percentage}%` }}
+          />
+        </div>
+        <span className="text-xs text-gray-600 w-4">{value}</span>
+      </div>
+    );
+  };
+
+  // Render wolf stats panel
+  const WolfStatsPanel = ({ wolf, compact = false }) => {
+    if (compact) {
+      return (
+        <div className="grid grid-cols-5 gap-1 mt-2">
+          {Object.entries(wolf.stats).map(([stat, value]) => (
+            <div key={stat} className="flex flex-col items-center" title={`${statInfo[stat].name}: ${value}`}>
+              <span className="text-sm">{statInfo[stat].icon}</span>
+              <span className="text-xs text-gray-600">{value}</span>
+            </div>
+          ))}
+        </div>
+      );
+    }
+    
+    return (
+      <div className="space-y-2">
+        {Object.entries(wolf.stats).map(([stat, value]) => (
+          <div key={stat}>
+            <div className="flex items-center justify-between text-xs text-gray-600 mb-1">
+              <span>{statInfo[stat].icon} {statInfo[stat].name}</span>
+            </div>
+            <StatBar stat={stat} value={value} showLabel={false} />
+          </div>
+        ))}
+      </div>
+    );
+  };
+
+  // Treats display component
+  const TreatsDisplay = ({ showAll = false }) => {
+    const treatTypes = showAll 
+      ? Object.entries(treats) 
+      : Object.entries(treats).filter(([_, count]) => count > 0);
+    
+    if (treatTypes.length === 0) {
+      return <span className="text-gray-400 text-sm">No treats yet!</span>;
+    }
+    
+    return (
+      <div className="flex flex-wrap gap-2">
+        {treatTypes.map(([type, count]) => (
+          <div 
+            key={type} 
+            className="flex items-center gap-1 bg-amber-50 px-2 py-1 rounded-lg"
+            title={treatInfo[type].description}
+          >
+            <span>{treatInfo[type].icon}</span>
+            <span className="text-sm font-medium text-amber-800">{count}</span>
+          </div>
+        ))}
+      </div>
+    );
+  };
+
+  const renderQuestion = () => {
+    const q = territories[currentTerritory].questions[currentQuestionIndex];
+    
+    return (
+      <div className="space-y-6">
+        <div className="text-lg font-medium text-gray-800">{q.question}</div>
+        
+        {q.sentence && (
+          <div className="bg-amber-50 p-4 rounded-lg text-lg text-gray-700 font-serif italic">
+            "{q.sentence}"
+          </div>
+        )}
+        
+        <div className="space-y-3">
+          {q.options.map((option, idx) => {
+            const isSelected = selectedAnswer === option;
+            const isCorrect = option === q.correct;
+            
+            let buttonClass = "w-full p-4 text-left rounded-lg border-2 transition-all ";
+            
+            if (showFeedback) {
+              if (isCorrect) {
+                buttonClass += "bg-green-100 border-green-500 text-green-800";
+              } else if (isSelected && !isCorrect) {
+                buttonClass += "bg-red-100 border-red-500 text-red-800";
+              } else {
+                buttonClass += "bg-gray-50 border-gray-200 text-gray-400";
+              }
+            } else {
+              buttonClass += "bg-white border-gray-200 hover:border-amber-400 hover:bg-amber-50 cursor-pointer";
+            }
+            
+            return (
+              <button
+                key={idx}
+                onClick={() => handleAnswer(option)}
+                disabled={showFeedback}
+                className={buttonClass}
+              >
+                {option}
+              </button>
+            );
+          })}
+        </div>
+        
+        {showFeedback && (
+          <div className={`p-4 rounded-lg ${selectedAnswer === territories[currentTerritory].questions[currentQuestionIndex].correct ? 'bg-green-50 border border-green-200' : 'bg-amber-50 border border-amber-200'}`}>
+            <div className="font-medium mb-2">
+              {selectedAnswer === territories[currentTerritory].questions[currentQuestionIndex].correct ? '🐺 Correct!' : '💭 Not quite...'}
+            </div>
+            <div className="text-gray-700">
+              {selectedAnswer === territories[currentTerritory].questions[currentQuestionIndex].correct 
+                ? territories[currentTerritory].questions[currentQuestionIndex].explanation 
+                : (territories[currentTerritory].questions[currentQuestionIndex].wrongExplanation || territories[currentTerritory].questions[currentQuestionIndex].explanation)}
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  // Home Screen
+  if (screen === 'home') {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-slate-800 to-slate-900 p-6">
+        <div className="max-w-2xl mx-auto">
+          <div className="text-center mb-8">
+            <div className="text-6xl mb-4">🐺</div>
+            <h1 className="text-3xl font-bold text-white mb-2">Wolf Grammar Quest</h1>
+            <p className="text-slate-300">Build your pack by mastering grammar!</p>
+          </div>
+          
+          {/* Treats Bar */}
+          <div className="bg-slate-700 rounded-xl p-4 mb-6">
+            <div className="flex items-center justify-between">
+              <span className="text-slate-300 text-sm font-medium">Your Treats</span>
+              <TreatsDisplay />
+            </div>
+          </div>
+          
+          <div className="bg-white rounded-xl p-6 mb-6">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-xl font-bold text-gray-800">Your Pack</h2>
+              <span className="text-amber-600 font-medium">{pack.length} {pack.length === 1 ? 'wolf' : 'wolves'}</span>
+            </div>
+            <div className="flex flex-wrap gap-4">
+              {pack.map((wolf, idx) => (
+                <button
+                  key={wolf.id || idx}
+                  onClick={() => {
+                    setSelectedWolf(wolf);
+                    setScreen('wolfDetail');
+                  }}
+                  className="flex flex-col items-center bg-slate-50 rounded-lg p-3 hover:bg-amber-50 transition-colors cursor-pointer"
+                >
+                  <div className="text-3xl mb-1">🐺</div>
+                  <div className="font-medium text-gray-800">{wolf.name}</div>
+                  <div className="text-xs text-amber-600">{wolf.role}</div>
+                  {wolf.stats && <WolfStatsPanel wolf={wolf} compact={true} />}
+                </button>
+              ))}
+            </div>
+            {pack.length < 9 && (
+              <div className="mt-4 text-sm text-gray-500 text-center">
+                Complete a territory with 70% or higher to earn a new wolf!
+              </div>
+            )}
+          </div>
+          
+          <div className="mb-4">
+            <h2 className="text-xl font-bold text-white mb-4">Choose Your Territory</h2>
+          </div>
+          
+          <div className="space-y-3">
+            {Object.entries(territories).map(([key, territory]) => (
+              <button
+                key={key}
+                onClick={() => startTerritory(key)}
+                className="w-full bg-white rounded-xl p-4 flex items-center gap-4 hover:bg-amber-50 transition-colors text-left"
+              >
+                <div className="text-3xl">{territory.icon}</div>
+                <div className="flex-1">
+                  <div className="font-bold text-gray-800 flex items-center gap-2">
+                    {territory.name}
+                    {completedTerritories[key] && <span className="text-green-500">✓</span>}
+                  </div>
+                  <div className="text-sm text-gray-500">{territory.description}</div>
+                  {territoryScores[key] && (
+                    <div className="text-xs text-amber-600 mt-1">
+                      Best: {territoryScores[key].score}/{territoryScores[key].total}
+                    </div>
+                  )}
+                </div>
+                <div className="text-gray-400">→</div>
+              </button>
+            ))}
+          </div>
+          
+          <div className="mt-6 flex justify-center gap-4">
+            <button
+              onClick={() => setScreen('pack')}
+              className="text-amber-400 hover:text-amber-300 font-medium"
+            >
+              View Full Pack →
+            </button>
+            <button
+              onClick={() => setScreen('inventory')}
+              className="text-amber-400 hover:text-amber-300 font-medium"
+            >
+              View Inventory →
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Quiz Screen
+  if (screen === 'quiz') {
+    const questions = territories[currentTerritory].questions;
+    const progress = ((currentQuestionIndex + 1) / questions.length) * 100;
+    
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-slate-100 to-slate-200 p-6">
+        <div className="max-w-2xl mx-auto">
+          <div className="bg-white rounded-xl shadow-lg overflow-hidden">
+            <div className="bg-slate-800 p-4">
+              <div className="flex items-center justify-between text-white mb-2">
+                <button 
+                  onClick={() => setScreen('home')}
+                  className="text-slate-300 hover:text-white"
+                >
+                  ← Back
+                </button>
+                <span className="font-medium">{territories[currentTerritory].name}</span>
+                <span>{score} 🐺</span>
+              </div>
+              <div className="bg-slate-700 rounded-full h-2">
+                <div 
+                  className="bg-amber-400 h-2 rounded-full transition-all"
+                  style={{ width: `${progress}%` }}
+                />
+              </div>
+              <div className="text-slate-400 text-sm mt-1 text-center">
+                Question {currentQuestionIndex + 1} of {questions.length}
+              </div>
+            </div>
+            
+            <div className="p-6">
+              {renderQuestion()}
+              
+              {showFeedback && (
+                <button
+                  onClick={nextQuestion}
+                  className="w-full mt-6 bg-amber-500 hover:bg-amber-600 text-white font-bold py-3 px-6 rounded-lg transition-colors"
+                >
+                  {currentQuestionIndex < questions.length - 1 ? 'Next Question →' : 'See Results →'}
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+        
+        {/* Wolf Reward Modal */}
+        {showPackReward && pendingWolf && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+            <div className="bg-white rounded-xl p-6 max-w-md w-full text-center max-h-[90vh] overflow-y-auto">
+              <div className="text-6xl mb-4">🐺</div>
+              <h2 className="text-2xl font-bold text-gray-800 mb-2">New Pack Member!</h2>
+              <p className="text-gray-600 mb-4">
+                You've earned a new {pendingWolf.role} for your pack!
+              </p>
+              
+              {/* Show wolf stats */}
+              <div className="bg-slate-50 rounded-lg p-4 mb-4">
+                <h3 className="font-medium text-gray-700 mb-3">Wolf Stats</h3>
+                <WolfStatsPanel wolf={pendingWolf} />
+              </div>
+              
+              <div className="bg-amber-50 rounded-lg p-3 mb-4">
+                <p className="text-sm text-amber-800">🐾 {pendingWolf.fact}</p>
+              </div>
+              <input
+                type="text"
+                placeholder="Name your wolf..."
+                value={newWolfName}
+                onChange={(e) => setNewWolfName(e.target.value)}
+                className="w-full p-3 border-2 border-gray-200 rounded-lg mb-4 focus:border-amber-400 outline-none"
+                maxLength={20}
+              />
+              <button
+                onClick={addWolfToPack}
+                disabled={!newWolfName.trim()}
+                className="w-full bg-amber-500 hover:bg-amber-600 disabled:bg-gray-300 text-white font-bold py-3 px-6 rounded-lg transition-colors"
+              >
+                Welcome to the Pack!
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  // Complete Screen
+  if (screen === 'complete') {
+    const questions = territories[currentTerritory].questions;
+    const percentage = Math.round((score / questions.length) * 100);
+    const passed = percentage >= 70;
+    
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-slate-800 to-slate-900 p-6 flex items-center justify-center">
+        <div className="max-w-md w-full bg-white rounded-xl p-8 text-center">
+          <div className="text-6xl mb-4">{passed ? '🐺' : '🌙'}</div>
+          <h2 className="text-2xl font-bold text-gray-800 mb-2">
+            {passed ? 'Territory Conquered!' : 'Keep Practising!'}
+          </h2>
+          <p className="text-gray-600 mb-4">
+            You scored {score} out of {questions.length} ({percentage}%)
+          </p>
+          
+          {/* Treats Earned */}
+          {pendingTreats && (
+            <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-6">
+              <div className="text-amber-800 font-medium mb-2">🍖 Treats Earned!</div>
+              <div className="flex flex-wrap justify-center gap-2">
+                {pendingTreats.meatChunk > 0 && (
+                  <div className="flex items-center gap-1 bg-white px-3 py-1 rounded-full">
+                    <span>🍖</span>
+                    <span className="text-sm font-medium">+{pendingTreats.meatChunk}</span>
+                  </div>
+                )}
+                {pendingTreats.wisdomBerry > 0 && (
+                  <div className="flex items-center gap-1 bg-white px-3 py-1 rounded-full">
+                    <span>🫐</span>
+                    <span className="text-sm font-medium">+{pendingTreats.wisdomBerry}</span>
+                  </div>
+                )}
+                {pendingTreats.swiftMeat > 0 && (
+                  <div className="flex items-center gap-1 bg-white px-3 py-1 rounded-full">
+                    <span>🥩</span>
+                    <span className="text-sm font-medium">+{pendingTreats.swiftMeat}</span>
+                  </div>
+                )}
+              </div>
+              {pendingTreats.bonusTreats > 0 && (
+                <div className="text-xs text-amber-600 mt-2">
+                  Bonus treats for scoring {percentage >= 90 ? '90%+' : '70%+'}!
+                </div>
+              )}
+            </div>
+          )}
+          
+          {passed && !completedTerritories[currentTerritory] && (
+            <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-6">
+              <div className="text-green-800 font-medium">🐺 New wolf earned!</div>
+              <div className="text-green-600 text-sm">Name your new pack member above!</div>
+            </div>
+          )}
+          
+          {!passed && (
+            <div className="bg-slate-50 border border-slate-200 rounded-lg p-4 mb-6">
+              <div className="text-slate-700 font-medium">Keep going!</div>
+              <div className="text-slate-500 text-sm">Score 70% or higher to claim this territory and earn a wolf.</div>
+            </div>
+          )}
+          
+          <div className="space-y-3">
+            <button
+              onClick={() => startTerritory(currentTerritory)}
+              className="w-full bg-amber-500 hover:bg-amber-600 text-white font-bold py-3 px-6 rounded-lg transition-colors"
+            >
+              Try Again
+            </button>
+            <button
+              onClick={() => setScreen('home')}
+              className="w-full bg-slate-100 hover:bg-slate-200 text-gray-700 font-bold py-3 px-6 rounded-lg transition-colors"
+            >
+              Choose Another Territory
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Pack Screen
+  if (screen === 'pack') {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-slate-800 to-slate-900 p-6">
+        <div className="max-w-2xl mx-auto">
+          <button 
+            onClick={() => setScreen('home')}
+            className="text-slate-300 hover:text-white mb-6"
+          >
+            ← Back to Map
+          </button>
+          
+          <div className="text-center mb-8">
+            <h1 className="text-3xl font-bold text-white mb-2">Your Wolf Pack</h1>
+            <p className="text-slate-300">{pack.length} members strong</p>
+          </div>
+          
+          <div className="grid gap-4">
+            {pack.map((wolf, idx) => (
+              <button
+                key={wolf.id || idx}
+                onClick={() => {
+                  setSelectedWolf(wolf);
+                  setScreen('wolfDetail');
+                }}
+                className="bg-white rounded-xl p-4 flex items-start gap-4 hover:bg-amber-50 transition-colors text-left"
+              >
+                <div className="text-4xl">🐺</div>
+                <div className="flex-1">
+                  <div className="font-bold text-gray-800 text-lg">{wolf.name}</div>
+                  <div className="text-amber-600 mb-2">{wolf.role}</div>
+                  {wolf.stats && <WolfStatsPanel wolf={wolf} compact={true} />}
+                </div>
+                <div className="text-gray-400">→</div>
+              </button>
+            ))}
+          </div>
+          
+          <div className="mt-8 bg-slate-700 rounded-xl p-6 text-center">
+            <div className="text-slate-300 mb-2">Territories Conquered</div>
+            <div className="text-3xl font-bold text-amber-400 mb-2">
+              {Object.keys(completedTerritories).length} / {Object.keys(territories).length}
+            </div>
+            <div className="text-slate-400 text-sm">
+              {Object.keys(completedTerritories).length < Object.keys(territories).length 
+                ? 'Complete more territories to grow your pack!'
+                : 'All territories conquered! 🎉'}
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Wolf Detail Screen
+  if (screen === 'wolfDetail' && selectedWolf) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-slate-800 to-slate-900 p-6">
+        <div className="max-w-md mx-auto">
+          <button 
+            onClick={() => {
+              setSelectedWolf(null);
+              setScreen('pack');
+            }}
+            className="text-slate-300 hover:text-white mb-6"
+          >
+            ← Back to Pack
+          </button>
+          
+          <div className="bg-white rounded-xl p-6 text-center">
+            <div className="text-6xl mb-4">🐺</div>
+            <h1 className="text-2xl font-bold text-gray-800 mb-1">{selectedWolf.name}</h1>
+            <div className="text-amber-600 font-medium mb-4">{selectedWolf.role}</div>
+            
+            {selectedWolf.fact && (
+              <div className="bg-amber-50 rounded-lg p-3 mb-6">
+                <p className="text-sm text-amber-800">🐾 {selectedWolf.fact}</p>
+              </div>
+            )}
+            
+            {selectedWolf.stats && (
+              <div className="bg-slate-50 rounded-lg p-4 mb-6">
+                <h3 className="font-bold text-gray-700 mb-4">Statistics</h3>
+                <WolfStatsPanel wolf={selectedWolf} />
+              </div>
+            )}
+            
+            <div className="bg-slate-50 rounded-lg p-4">
+              <h3 className="font-bold text-gray-700 mb-2">Stat Guide</h3>
+              <div className="space-y-2 text-left">
+                {Object.entries(statInfo).map(([key, info]) => (
+                  <div key={key} className="flex items-center gap-2 text-sm text-gray-600">
+                    <span>{info.icon}</span>
+                    <span className="font-medium">{info.name}:</span>
+                    <span>{info.description}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Inventory Screen
+  if (screen === 'inventory') {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-slate-800 to-slate-900 p-6">
+        <div className="max-w-md mx-auto">
+          <button 
+            onClick={() => setScreen('home')}
+            className="text-slate-300 hover:text-white mb-6"
+          >
+            ← Back to Map
+          </button>
+          
+          <div className="text-center mb-8">
+            <h1 className="text-3xl font-bold text-white mb-2">Your Inventory</h1>
+            <p className="text-slate-300">Treats for your wolf pack</p>
+          </div>
+          
+          <div className="bg-white rounded-xl p-6">
+            <h2 className="font-bold text-gray-800 mb-4">Treats</h2>
+            <div className="space-y-4">
+              {Object.entries(treatInfo).map(([key, info]) => (
+                <div key={key} className="flex items-center gap-4 p-3 bg-slate-50 rounded-lg">
+                  <div className="text-3xl">{info.icon}</div>
+                  <div className="flex-1">
+                    <div className="font-medium text-gray-800">{info.name}</div>
+                    <div className="text-sm text-gray-500">{info.description}</div>
+                  </div>
+                  <div className="text-2xl font-bold text-amber-600">{treats[key]}</div>
+                </div>
+              ))}
+            </div>
+            
+            <div className="mt-6 p-4 bg-amber-50 rounded-lg">
+              <h3 className="font-medium text-amber-800 mb-2">How to earn treats</h3>
+              <ul className="text-sm text-amber-700 space-y-1">
+                <li>🍖 1 Meat Chunk for every 2 correct answers</li>
+                <li>🍖 +1 bonus treat for scoring 70%+</li>
+                <li>🍖 +3 bonus treats for scoring 90%+</li>
+                <li>🫐🥩 Special treats for scoring 90%+</li>
+              </ul>
+            </div>
+          </div>
+          
+          <div className="mt-6 bg-slate-700 rounded-xl p-6 text-center">
+            <div className="text-slate-300 mb-2">Coming Soon</div>
+            <div className="text-amber-400 font-medium">Feed your wolves to keep them happy!</div>
+            <div className="text-slate-400 text-sm mt-2">Phase 2 will add wolf care and feeding.</div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return null;
+};
+
+export default WolfGrammarQuest;

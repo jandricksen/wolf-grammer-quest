@@ -1,0 +1,28 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm install)",
+      "Bash(npx tsc:*)",
+      "Bash(npm run build:*)",
+      "Bash(npm run dev:*)",
+      "Bash(if [ -f \"wolf-grammar-quest.jsx\" ])",
+      "Bash(then mv \"wolf-grammar-quest.jsx\" \"wolf-grammar-quest.jsx.bak\")",
+      "Bash(else echo \"File not found\")",
+      "Bash(fi)",
+      "Bash(ls:*)",
+      "Bash(grep:*)",
+      "Bash(done)",
+      "Bash(npx playwright install:*)",
+      "Bash(npm run test:e2e:*)",
+      "Bash(npm install:*)",
+      "Bash(npx eslint:*)",
+      "Bash(npx prettier:*)",
+      "Bash(npm run lint:*)",
+      "Bash(npm run format:*)",
+      "Bash(npm run lint:fix:*)",
+      "Bash(mkdir:*)",
+      "Skill(make-plan)",
+      "Skill(make-plan:*)"
+    ]
+  }
+}
