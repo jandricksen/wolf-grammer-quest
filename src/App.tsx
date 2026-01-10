@@ -7,6 +7,7 @@ import {
   PackScreen,
   WolfDetailScreen,
   InventoryScreen,
+  WinScreen,
 } from "./screens";
 
 /**
@@ -30,6 +31,8 @@ function AppContent() {
       return <WolfDetailScreen />;
     case "inventory":
       return <InventoryScreen />;
+    case "win":
+      return <WinScreen />;
     default:
       return <HomeScreen />;
   }

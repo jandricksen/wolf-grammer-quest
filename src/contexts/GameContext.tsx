@@ -10,9 +10,15 @@ import type {
   Question,
 } from "../types";
 import { territories, territoryWolves } from "../data";
-import { createInitialWolf, getWolfTrait, getRandomWolfName } from "../utils/wolfUtils";
+import {
+  createInitialWolf,
+  getWolfTrait,
+  getRandomWolfName,
+  isWolfHungry,
+} from "../utils/wolfUtils";
 import { calculateTreatsEarned, applyTreatsToInventory, TreatsEarned } from "../utils/treatUtils";
 import { checkPassingScore, shuffleArray } from "../utils/quizUtils";
+import { FEEDING_COST } from "../data/constants";
 
 // Pending wolf type (wolf that has been earned and assigned a name)
 interface PendingWolf {
@@ -42,6 +48,7 @@ interface GameState {
   // Territory progress
   completedTerritories: CompletedTerritories;
   territoryScores: TerritoryScores;
+  hasWon: boolean;
 
   // Quiz state
   currentTerritory: string | null;
@@ -67,6 +74,7 @@ interface GameActions {
   addWolfToPack: () => void;
   selectWolf: (wolf: Wolf | null) => void;
   closePackReward: () => void;
+  feedWolf: (wolfId: string) => void;
 }
 
 // Combined context value
@@ -107,6 +115,7 @@ export function GameProvider({ children }: GameProviderProps) {
   // Territory progress
   const [completedTerritories, setCompletedTerritories] = useState<CompletedTerritories>({});
   const [territoryScores, setTerritoryScores] = useState<TerritoryScores>({});
+  const [hasWon, setHasWon] = useState(false);
 
   // Quiz state
   const [currentTerritory, setCurrentTerritory] = useState<string | null>(null);
@@ -216,16 +225,28 @@ export function GameProvider({ children }: GameProviderProps) {
   // Add named wolf to pack
   const addWolfToPack = () => {
     if (pendingWolf) {
+      // eslint-disable-next-line react-hooks/purity
+      const now = Date.now();
       const newWolf: Wolf = {
-        id: `wolf_${Date.now()}`,
+        id: `wolf_${now}`,
         name: pendingWolf.name,
         role: pendingWolf.role,
         fact: pendingWolf.fact,
         earned: true,
         trait: pendingWolf.trait,
+        lastFedAt: now,
       };
       setPack([...pack, newWolf]);
-      setCompletedTerritories({ ...completedTerritories, [pendingWolf.territory]: true });
+
+      const updatedCompletedTerritories = {
+        ...completedTerritories,
+        [pendingWolf.territory]: true,
+      };
+      setCompletedTerritories(updatedCompletedTerritories);
+
+      // Check if player has won after completing this territory
+      checkWinCondition(updatedCompletedTerritories);
+
       setShowPackReward(false);
       setNewWolfName("");
       setPendingWolf(null);
@@ -242,6 +263,41 @@ export function GameProvider({ children }: GameProviderProps) {
     setShowPackReward(false);
   };
 
+  // Check if player has won (all 8 territories completed at 80%+)
+  const checkWinCondition = (updatedCompletedTerritories: CompletedTerritories) => {
+    const totalTerritories = Object.keys(territories).length;
+    const completedCount = Object.keys(updatedCompletedTerritories).length;
+
+    if (completedCount === totalTerritories && !hasWon) {
+      setHasWon(true);
+      setScreen("win");
+    }
+  };
+
+  // Feed a wolf (costs 1 meat chunk, updates lastFedAt)
+  const feedWolf = (wolfId: string) => {
+    const wolf = pack.find((w) => w.id === wolfId);
+
+    // Validate: wolf exists, has treats, and wolf is hungry
+    if (!wolf || treats.meatChunk < FEEDING_COST || !isWolfHungry(wolf)) {
+      return;
+    }
+
+    // Deduct treat
+    setTreats({
+      ...treats,
+      meatChunk: treats.meatChunk - FEEDING_COST,
+    });
+
+    // Update wolf's lastFedAt
+    setPack(pack.map((w) => (w.id === wolfId ? { ...w, lastFedAt: Date.now() } : w)));
+
+    // Update selectedWolf if it's the one being fed
+    if (selectedWolf && selectedWolf.id === wolfId) {
+      setSelectedWolf({ ...selectedWolf, lastFedAt: Date.now() });
+    }
+  };
+
   // Combine state and actions into context value
   const value: GameContextValue = {
     // State
@@ -255,6 +311,7 @@ export function GameProvider({ children }: GameProviderProps) {
     pendingTreats,
     completedTerritories,
     territoryScores,
+    hasWon,
     currentTerritory,
     currentQuestionIndex,
     score,
@@ -271,6 +328,7 @@ export function GameProvider({ children }: GameProviderProps) {
     addWolfToPack,
     selectWolf,
     closePackReward,
+    feedWolf,
   };
 
   return <GameContext.Provider value={value}>{children}</GameContext.Provider>;

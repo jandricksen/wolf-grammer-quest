@@ -110,6 +110,7 @@ export function CompletionScreen() {
             fact: pendingWolf.fact,
             earned: true,
             trait: pendingWolf.trait,
+            lastFedAt: 0,
           }}
           onNameSubmit={addWolfToPack}
         />

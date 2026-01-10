@@ -4,3 +4,4 @@ export { CompletionScreen } from "./CompletionScreen";
 export { PackScreen } from "./PackScreen";
 export { WolfDetailScreen } from "./WolfDetailScreen";
 export { InventoryScreen } from "./InventoryScreen";
+export { WinScreen } from "./WinScreen";

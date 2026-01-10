@@ -1,5 +1,5 @@
 // Screen navigation
-export type Screen = "home" | "quiz" | "complete" | "pack" | "wolfDetail" | "inventory";
+export type Screen = "home" | "quiz" | "complete" | "pack" | "wolfDetail" | "inventory" | "win";
 
 // Question types
 export type QuestionType = "multiple";
@@ -40,6 +40,7 @@ export interface Wolf {
   earned: boolean;
   fact: string;
   trait: StatName;
+  lastFedAt: number;
 }
 
 // Treats
