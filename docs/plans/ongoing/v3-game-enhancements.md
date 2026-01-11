@@ -94,62 +94,62 @@ Options to consider:
 3. **Wolf matching territory trait** - Thematic (fail courage territory, courage wolf gets hungry)
 4. **User's choice** - Show modal asking which wolf to make hungry
 
-**Recommended:** Most recently fed wolf (option 2) - feels fair and logical.
+**Chosen:** Most recently fed wolf (option 2) - feels fair and logical.
 
 ### B2: Add Failure Consequence Logic
 
-- [ ] Update `src/contexts/GameContext.tsx`:
-  - Add `makeWolfHungry(wolfId: string)` function
+- [x] Update `src/contexts/GameContext.tsx`:
+  - Add failure logic inline in `checkTerritoryReward()`
     - Sets `lastFedAt` to `Date.now() - (HUNGER_THRESHOLD_HOURS + 1) * 60 * 60 * 1000`
     - This makes the wolf immediately hungry
   - Update `checkTerritoryReward()` to handle failure:
     - If `!passed && pack.length > 0`:
       - Find wolf with most recent `lastFedAt` (excluding already hungry wolves)
-      - Call `makeWolfHungry()` on that wolf
+      - Make that wolf hungry by updating `lastFedAt`
       - Store which wolf was made hungry for display
 
 ### B3: Add Failure State
 
-- [ ] Update `src/types/index.ts`:
-  - Add to GameState: `failedWolfId: string | null` (wolf made hungry from failure)
-- [ ] Update `src/contexts/GameContext.tsx`:
-  - Add `failedWolfId` state
+- [x] Update `src/types/index.ts`:
+  - Add `FailedWolf` interface with `id` and `name`
+- [x] Update `src/contexts/GameContext.tsx`:
+  - Add `failedWolf: FailedWolf | null` state
   - Set it when a wolf is made hungry due to failure
-  - Clear it when navigating away from completion screen
+  - Clear it at start of `checkTerritoryReward()`
 
 ### B4: Update Completion Screen
 
-- [ ] Update `src/screens/CompletionScreen.tsx`:
+- [x] Update `src/screens/CompletionScreen.tsx`:
   - When showing failure (below 80%), display which wolf became hungry
-  - Message like: "Your poor score has left [Wolf Name] hungry!"
-  - Show wolf card with hungry indicator
+  - Message: "Your poor score has left [Wolf Name] hungry!"
+  - Red warning box with data-testid="failed-wolf-message"
   - Encourage player to earn treats to feed them
 
 ### B5: Edge Cases
 
-- [ ] Handle edge case: all wolves already hungry
-  - No additional consequence if all wolves are hungry
-- [ ] Handle edge case: only Luna (starting wolf)
+- [x] Handle edge case: all wolves already hungry
+  - No additional consequence if all wolves are hungry (no `failedWolf` set)
+- [x] Handle edge case: only Luna (starting wolf)
   - Luna can still become hungry
-- [ ] Handle edge case: player has 0 wolves
-  - Should not happen (always have Luna), but guard against it
+- [x] Handle edge case: player has 0 wolves
+  - Guarded with `pack.length > 0` check
 
 ### E2E Test Updates (Phase B)
 
-- [ ] Create `e2e/failure-consequences.spec.ts`:
+- [x] Create `e2e/failure-consequences.spec.ts`:
   - Test: "failing territory makes most recently fed wolf hungry"
   - Test: "failure message shows which wolf became hungry"
   - Test: "all wolves already hungry - no additional consequence"
   - Test: "feeding hungry wolf after failure works"
-- [ ] Update test utilities to support checking wolf hunger state
+- [x] Add `createHungryWolf()` helper to `e2e/test-utils.ts`
 
 ### Documentation Update (Phase B)
 
-- [ ] Update `CLAUDE.md` with failure consequence system
-- [ ] Run `npm run test:e2e` - ensure 100% pass
-- [ ] Run `npm run lint` and `npm run build`
+- [x] Update `CLAUDE.md` with failure consequence system
+- [x] Run `npm run test:e2e` - ensure 100% pass (28/28 tests pass)
+- [x] Run `npm run lint` and `npm run build`
 
-**Status:** ⬜ Not Started
+**Status:** ✅ Complete
 
 ---
 

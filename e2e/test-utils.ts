@@ -8,7 +8,7 @@ import type {
   StatName,
   Treats,
 } from "../src/types";
-import { READING_TIME_SECONDS } from "../src/data/constants";
+import { READING_TIME_SECONDS, HUNGER_THRESHOLD_HOURS } from "../src/data/constants";
 
 // Storage key must match the one in persistenceUtils.ts
 const STORAGE_KEY = "wolfGrammarQuest_v1";
@@ -190,5 +190,20 @@ export function createTestWolf(id: string, name: string, role: WolfRole, trait: 
     fact: "Test wolf fact",
     trait,
     lastFedAt: Date.now(),
+  };
+}
+
+/**
+ * Create a hungry wolf for testing purposes (fed more than 24 hours ago)
+ */
+export function createHungryWolf(id: string, name: string, role: WolfRole, trait: StatName): Wolf {
+  return {
+    id,
+    name,
+    role,
+    earned: true,
+    fact: "Test wolf fact",
+    trait,
+    lastFedAt: Date.now() - (HUNGER_THRESHOLD_HOURS + 1) * 60 * 60 * 1000,
   };
 }

@@ -11,6 +11,7 @@ export function CompletionScreen() {
     pendingTreats,
     pendingWolf,
     showPackReward,
+    failedWolf,
     startTerritory,
     navigateTo,
     addWolfToPack,
@@ -80,6 +81,20 @@ export function CompletionScreen() {
             <div className="text-slate-700 font-medium">Keep going!</div>
             <div className="text-slate-500 text-sm">
               Score 80% or higher to claim this territory and earn a wolf.
+            </div>
+          </div>
+        )}
+
+        {/* Wolf became hungry due to failure */}
+        {!passed && failedWolf && (
+          <div
+            className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6"
+            data-testid="failed-wolf-message"
+          >
+            <div className="text-red-800 font-medium">🐺 Oh no!</div>
+            <div className="text-red-600 text-sm">
+              Your poor score has left <span className="font-bold">{failedWolf.name}</span> hungry!
+              Earn treats to feed them.
             </div>
           </div>
         )}

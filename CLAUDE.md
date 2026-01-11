@@ -150,6 +150,7 @@ The app is currently at **Phase 1** (Wolf Statistics & Treats completed).
 - **Time-based hunger system** giving treats a purpose
 - **E2E test coverage with Playwright (100% test coverage required)**
 - **Reading timer** - 5-second countdown before answers appear (enforces reading)
+- **Failure consequences** - failing a territory makes the most recently fed wolf hungry
 
 **Planned (see DEVELOPMENT_PLAN.md):**
 
@@ -217,6 +218,15 @@ The app is currently at **Phase 1** (Wolf Statistics & Treats completed).
 - Feeding costs 1 meat chunk per wolf
 - Hungry wolves show visual indicators in pack view
 
+**Failure Consequences:**
+
+- When failing a territory (below 80%), the most recently fed wolf becomes hungry
+- Logic finds wolves that are not already hungry, sorted by most recently fed
+- Sets `lastFedAt` to make the wolf immediately hungry (24+ hours in the past)
+- `failedWolf` state stores `{ id, name }` for display on completion screen
+- If all wolves are already hungry, no additional consequence occurs
+- Completion screen shows "Your poor score has left [Wolf Name] hungry!" message
+
 **Win Condition:**
 
 - `checkWinCondition(completedTerritories)` - Check if all 8 territories completed at 80%+
@@ -277,10 +287,11 @@ The original `wolf-grammar-quest.jsx` (~1,777 lines) has been archived to `wolf-
 **Test Structure:**
 
 - `e2e/screens.spec.ts` - Screen loading and navigation (5 tests)
-- `e2e/quiz-flow.spec.ts` - Quiz journey and question types (5 tests)
+- `e2e/quiz-flow.spec.ts` - Quiz journey and question types (7 tests)
 - `e2e/win-condition.spec.ts` - Win state testing with parameterized state (2 tests)
 - `e2e/wolf-earning.spec.ts` - Wolf reward flow and scoring (5 tests)
 - `e2e/hunger.spec.ts` - Hunger system and wolf feeding (5 tests)
+- `e2e/failure-consequences.spec.ts` - Failure consequences and wolf hunger (4 tests)
 - `e2e/test-utils.ts` - Shared test utilities and helpers
 
 **Running Tests:**

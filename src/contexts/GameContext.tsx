@@ -8,6 +8,7 @@ import type {
   WolfRole,
   StatName,
   Question,
+  FailedWolf,
 } from "../types";
 import { territories, territoryWolves } from "../data";
 import {
@@ -18,7 +19,7 @@ import {
 } from "../utils/wolfUtils";
 import { calculateTreatsEarned, applyTreatsToInventory, TreatsEarned } from "../utils/treatUtils";
 import { checkPassingScore, shuffleArray } from "../utils/quizUtils";
-import { FEEDING_COST, READING_TIME_SECONDS } from "../data/constants";
+import { FEEDING_COST, READING_TIME_SECONDS, HUNGER_THRESHOLD_HOURS } from "../data/constants";
 import { loadPersistedState, savePersistedState } from "../utils/persistenceUtils";
 
 // Pending wolf type (wolf that has been earned and assigned a name)
@@ -41,6 +42,7 @@ interface GameState {
   pendingWolf: PendingWolf | null;
   newWolfName: string;
   showPackReward: boolean;
+  failedWolf: FailedWolf | null;
 
   // Treats
   treats: Treats;
@@ -110,6 +112,7 @@ export function GameProvider({ children }: GameProviderProps) {
   const [pendingWolf, setPendingWolf] = useState<PendingWolf | null>(null);
   const [newWolfName, setNewWolfName] = useState("");
   const [showPackReward, setShowPackReward] = useState(false);
+  const [failedWolf, setFailedWolf] = useState<FailedWolf | null>(null);
 
   // Treats
   const [treats, setTreats] = useState<Treats>({
@@ -244,6 +247,9 @@ export function GameProvider({ children }: GameProviderProps) {
     const passed = checkPassingScore(finalScore, totalQuestions);
     const alreadyCompleted = completedTerritories[territoryKey];
 
+    // Clear any previous failed wolf
+    setFailedWolf(null);
+
     // Calculate treats regardless of pass/fail
     const treatsEarned = calculateTreatsEarned(finalScore, totalQuestions);
     setPendingTreats(treatsEarned);
@@ -267,6 +273,27 @@ export function GameProvider({ children }: GameProviderProps) {
           name: newName,
         });
         setShowPackReward(true);
+      }
+    } else if (!passed && pack.length > 0) {
+      // Failed territory - make the most recently fed wolf hungry
+      // Find wolves that are not already hungry (most recently fed first)
+      const feedableWolves = pack
+        .filter((wolf) => !isWolfHungry(wolf))
+        .sort((a, b) => b.lastFedAt - a.lastFedAt);
+
+      if (feedableWolves.length > 0) {
+        const wolfToMakeHungry = feedableWolves[0];
+        // Set lastFedAt to make the wolf immediately hungry
+        const hungryTimestamp = Date.now() - (HUNGER_THRESHOLD_HOURS + 1) * 60 * 60 * 1000;
+
+        setPack(
+          pack.map((w) => (w.id === wolfToMakeHungry.id ? { ...w, lastFedAt: hungryTimestamp } : w))
+        );
+
+        setFailedWolf({
+          id: wolfToMakeHungry.id,
+          name: wolfToMakeHungry.name,
+        });
       }
     }
   };
@@ -366,6 +393,7 @@ export function GameProvider({ children }: GameProviderProps) {
     pendingWolf,
     newWolfName,
     showPackReward,
+    failedWolf,
     treats,
     pendingTreats,
     completedTerritories,

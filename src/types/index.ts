@@ -94,3 +94,9 @@ export interface QuizState {
   showAnswers: boolean;
   readingTimeRemaining: number;
 }
+
+// Failure consequence state
+export interface FailedWolf {
+  id: string;
+  name: string;
+}
