@@ -92,12 +92,3 @@ export interface QuizState {
   showFeedback: boolean;
   questions: Question[];
 }
-
-// Test state injection (development/test mode only)
-export interface TestInitialState {
-  completedTerritories?: CompletedTerritories;
-  territoryScores?: TerritoryScores;
-  pack?: Wolf[];
-  treats?: Treats;
-  hasWon?: boolean;
-}

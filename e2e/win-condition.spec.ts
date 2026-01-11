@@ -3,7 +3,7 @@ import { territories } from "../src/data/territories";
 import {
   getCorrectAnswers,
   answerQuizQuestions,
-  setTestInitialState,
+  setGameState,
   createCompletedTerritories,
   createTerritoryScores,
   createTestWolf,
@@ -34,7 +34,7 @@ test.describe("Win Condition Tests", () => {
     ];
 
     // Set up initial state with 7 completed territories
-    await setTestInitialState(page, {
+    await setGameState(page, {
       completedTerritories: createCompletedTerritories(completedKeys),
       territoryScores: createTerritoryScores(completedKeys, 10),
       pack: testWolves,
@@ -111,7 +111,7 @@ test.describe("Win Condition Tests", () => {
       createTestWolf("wolf_8", "Storm", "Storyteller", "kindness"),
     ];
 
-    await setTestInitialState(page, {
+    await setGameState(page, {
       completedTerritories: createCompletedTerritories(allTerritoryKeys),
       territoryScores: createTerritoryScores(allTerritoryKeys, 10),
       pack: testWolves,

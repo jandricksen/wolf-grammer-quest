@@ -1,4 +1,4 @@
-import { createContext, useState, ReactNode } from "react";
+import { createContext, useState, useEffect, ReactNode } from "react";
 import type {
   Screen,
   Wolf,
@@ -8,7 +8,6 @@ import type {
   WolfRole,
   StatName,
   Question,
-  TestInitialState,
 } from "../types";
 import { territories, territoryWolves } from "../data";
 import {
@@ -20,6 +19,7 @@ import {
 import { calculateTreatsEarned, applyTreatsToInventory, TreatsEarned } from "../utils/treatUtils";
 import { checkPassingScore, shuffleArray } from "../utils/quizUtils";
 import { FEEDING_COST } from "../data/constants";
+import { loadPersistedState, savePersistedState } from "../utils/persistenceUtils";
 
 // Pending wolf type (wolf that has been earned and assigned a name)
 interface PendingWolf {
@@ -87,46 +87,39 @@ export const GameContext = createContext<GameContextValue | undefined>(undefined
 // Provider props
 interface GameProviderProps {
   children: ReactNode;
-  initialState?: TestInitialState; // Only used in development/test mode
 }
 
 /**
  * GameProvider - Centralized state management for Wolf Grammar Quest
  * Replaces 16 useState hooks with a single context provider
  */
-export function GameProvider({ children, initialState }: GameProviderProps) {
-  // Apply test initial state only in development mode
-  const testState = import.meta.env.DEV ? initialState : undefined;
+export function GameProvider({ children }: GameProviderProps) {
+  // Loading state for initial persistence load
+  const [isLoading, setIsLoading] = useState(true);
 
   // Screen navigation
   const [screen, setScreen] = useState<Screen>("home");
 
-  // Pack and wolves - use test state if provided
-  const [pack, setPack] = useState<Wolf[]>(testState?.pack ?? [createInitialWolf()]);
+  // Pack and wolves
+  const [pack, setPack] = useState<Wolf[]>([createInitialWolf()]);
   const [selectedWolf, setSelectedWolf] = useState<Wolf | null>(null);
   const [pendingWolf, setPendingWolf] = useState<PendingWolf | null>(null);
   const [newWolfName, setNewWolfName] = useState("");
   const [showPackReward, setShowPackReward] = useState(false);
 
-  // Treats - use test state if provided
-  const [treats, setTreats] = useState<Treats>(
-    testState?.treats ?? {
-      meatChunk: 5, // Starting treats to get going
-      wisdomBerry: 0,
-      swiftMeat: 0,
-      goldenKibble: 0,
-    }
-  );
+  // Treats
+  const [treats, setTreats] = useState<Treats>({
+    meatChunk: 5, // Starting treats to get going
+    wisdomBerry: 0,
+    swiftMeat: 0,
+    goldenKibble: 0,
+  });
   const [pendingTreats, setPendingTreats] = useState<TreatsEarned | null>(null);
 
-  // Territory progress - use test state if provided
-  const [completedTerritories, setCompletedTerritories] = useState<CompletedTerritories>(
-    testState?.completedTerritories ?? {}
-  );
-  const [territoryScores, setTerritoryScores] = useState<TerritoryScores>(
-    testState?.territoryScores ?? {}
-  );
-  const [hasWon, setHasWon] = useState(testState?.hasWon ?? false);
+  // Territory progress
+  const [completedTerritories, setCompletedTerritories] = useState<CompletedTerritories>({});
+  const [territoryScores, setTerritoryScores] = useState<TerritoryScores>({});
+  const [hasWon, setHasWon] = useState(false);
 
   // Quiz state
   const [currentTerritory, setCurrentTerritory] = useState<string | null>(null);
@@ -135,6 +128,40 @@ export function GameProvider({ children, initialState }: GameProviderProps) {
   const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
   const [showFeedback, setShowFeedback] = useState(false);
   const [shuffledQuestions, setShuffledQuestions] = useState<Question[]>([]);
+
+  // Load persisted state on mount
+  useEffect(() => {
+    const loadState = async () => {
+      const persisted = await loadPersistedState();
+      if (persisted) {
+        setPack(persisted.pack);
+        setTreats(persisted.treats);
+        setCompletedTerritories(persisted.completedTerritories);
+        setTerritoryScores(persisted.territoryScores);
+        setHasWon(persisted.hasWon);
+      }
+      setIsLoading(false);
+    };
+    loadState();
+  }, []);
+
+  // Auto-save state on changes (debounced)
+  useEffect(() => {
+    // Don't save during initial load
+    if (isLoading) return;
+
+    const timeoutId = setTimeout(() => {
+      savePersistedState({
+        completedTerritories,
+        territoryScores,
+        pack,
+        treats,
+        hasWon,
+      });
+    }, 1000); // Debounce 1 second
+
+    return () => clearTimeout(timeoutId);
+  }, [completedTerritories, territoryScores, pack, treats, hasWon, isLoading]);
 
   // Navigation action
   const navigateTo = (newScreen: Screen) => {
@@ -341,6 +368,15 @@ export function GameProvider({ children, initialState }: GameProviderProps) {
     closePackReward,
     feedWolf,
   };
+
+  // Show loading screen while initial state is being loaded
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-slate-800 to-slate-900 flex items-center justify-center">
+        <div className="text-white text-xl">Loading...</div>
+      </div>
+    );
+  }
 
   return <GameContext.Provider value={value}>{children}</GameContext.Provider>;
 }

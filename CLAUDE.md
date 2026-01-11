@@ -327,7 +327,22 @@ When expanding question banks (e.g., from 10 to 25 questions per territory):
 - No `autoFocus` prop (accessibility concern)
 - Import React types correctly (`import { type KeyboardEvent } from "react"`)
 
-## Future Considerations
+## Data Persistence
 
-**Data Persistence:**
-Currently no persistence - all state is lost on refresh. Future phases will add localStorage then potentially cloud sync (Firebase/Supabase).
+**Current Implementation:**
+Game progress persists via JSON file storage (using File System Access API) with localStorage fallback for older browsers. State is automatically saved when changes occur (debounced to 1 second).
+
+**Persisted State:**
+- Completed territories and scores
+- Wolf pack (with names, traits, roles, and hunger status)
+- Treats inventory
+- Win state
+
+**How It Works:**
+- Primary: JSON file (`wolf-grammar-quest-save.json`) for portable, human-readable saves
+- Fallback: localStorage for browsers without File System Access API
+- Auto-save on state changes (1-second debounce)
+- Auto-load on app mount
+
+**Future Considerations:**
+Cloud sync (Firebase/Supabase) for cross-device progress.

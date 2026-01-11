@@ -1,13 +1,25 @@
 import type { Page } from "@playwright/test";
 import type {
   Question,
-  TestInitialState,
   Wolf,
   CompletedTerritories,
   TerritoryScores,
   WolfRole,
   StatName,
+  Treats,
 } from "../src/types";
+
+// Storage key must match the one in persistenceUtils.ts
+const STORAGE_KEY = "wolfGrammarQuest_v1";
+
+// Persisted state interface (matches source)
+export interface PersistedState {
+  completedTerritories: CompletedTerritories;
+  territoryScores: TerritoryScores;
+  pack: Wolf[];
+  treats: Treats;
+  hasWon: boolean;
+}
 
 /**
  * Extract all correct answers from a question array
@@ -117,13 +129,16 @@ export async function answerQuestionsIncorrectly(
 }
 
 /**
- * Inject initial test state before navigating to the app
- * This sets window.__TEST_INITIAL_STATE__ which the app reads on mount
+ * Inject game state via localStorage before navigating to the app
+ * Tests use the localStorage fallback mechanism for persistence
  */
-export async function setTestInitialState(page: Page, state: TestInitialState): Promise<void> {
-  await page.addInitScript((testState) => {
-    window.__TEST_INITIAL_STATE__ = testState;
-  }, state);
+export async function setGameState(page: Page, state: PersistedState): Promise<void> {
+  await page.addInitScript(
+    (args) => {
+      localStorage.setItem(args.key, JSON.stringify(args.state));
+    },
+    { key: STORAGE_KEY, state }
+  );
 }
 
 /**
