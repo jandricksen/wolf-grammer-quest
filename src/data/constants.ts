@@ -109,3 +109,6 @@ export const roleTraits: RoleTraits = {
 // Hunger system constants
 export const HUNGER_THRESHOLD_HOURS = 24;
 export const FEEDING_COST = 1; // Meat chunks per feeding
+
+// Reading timer constants
+export const READING_TIME_SECONDS = 5;

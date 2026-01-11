@@ -19,22 +19,22 @@ Implement user feedback features to improve learning habits and add meaningful c
 
 ### A1: Add Timer State
 
-- [ ] Update `src/contexts/GameContext.tsx`:
+- [x] Update `src/contexts/GameContext.tsx`:
   - Add `showAnswers: boolean` to state (starts as `false`)
   - Add `readingTimeRemaining: number` to state (starts at 5)
-- [ ] Update `src/types/index.ts`:
+- [x] Update `src/types/index.ts`:
   - Add `showAnswers` and `readingTimeRemaining` to `QuizState` interface
 
 ### A2: Implement Timer Logic
 
-- [ ] Update `src/contexts/GameContext.tsx`:
+- [x] Update `src/contexts/GameContext.tsx`:
   - In `selectAnswer()`, do nothing if `!showAnswers`
   - In `nextQuestion()`, reset `showAnswers = false` and `readingTimeRemaining = 5`
   - In `startTerritory()`, set `showAnswers = false` and `readingTimeRemaining = 5`
 
 ### A3: Create Timer Component
 
-- [ ] Create `src/components/ReadingTimer.tsx`:
+- [x] Create `src/components/ReadingTimer.tsx`:
   - Displays countdown from 5 to 0
   - Circular or bar progress indicator
   - Calm visual (not frantic) - perhaps a wolf paw print filling in
@@ -43,15 +43,15 @@ Implement user feedback features to improve learning habits and add meaningful c
 
 ### A4: Update QuizScreen
 
-- [ ] Update `src/screens/QuizScreen.tsx`:
+- [x] Update `src/screens/QuizScreen.tsx`:
   - Add timer effect that counts down each second
   - When `readingTimeRemaining` reaches 0, set `showAnswers = true`
   - Pass `showAnswers` to QuestionRenderer
-- [ ] Export `ReadingTimer` from `src/components/index.ts`
+- [x] Export `ReadingTimer` from `src/components/index.ts`
 
 ### A5: Update QuestionRenderer
 
-- [ ] Update `src/components/QuestionRenderer.tsx`:
+- [x] Update `src/components/QuestionRenderer.tsx`:
   - Accept new prop `showAnswers: boolean`
   - When `showAnswers = false`, show ReadingTimer instead of answer buttons
   - When `showAnswers = true`, show answer buttons as normal
@@ -59,24 +59,25 @@ Implement user feedback features to improve learning habits and add meaningful c
 
 ### A6: Add Timer Constant
 
-- [ ] Update `src/data/constants.ts`:
+- [x] Update `src/data/constants.ts`:
   - Add `READING_TIME_SECONDS = 5`
 
 ### E2E Test Updates (Phase A)
 
-- [ ] Update `e2e/quiz-flow.spec.ts`:
-  - Add test: "answers are hidden for 5 seconds after question loads"
-  - Add test: "timer counts down and reveals answers"
+- [x] Update `e2e/quiz-flow.spec.ts`:
+  - Add test: "reading timer shows before answers appear"
+  - Add test: "reading timer resets for each question"
   - Update existing quiz tests to wait for timer before clicking answers
-- [ ] Create helper function `waitForAnswersToAppear()` in `e2e/test-utils.ts`
+- [x] Create helper function `waitForAnswersToAppear()` in `e2e/test-utils.ts`
+- [x] Increase Playwright timeout to 120s in `playwright.config.ts`
 
 ### Documentation Update (Phase A)
 
-- [ ] Update `CLAUDE.md` with reading timer feature
-- [ ] Run `npm run test:e2e` - ensure 100% pass
-- [ ] Run `npm run lint` and `npm run build`
+- [x] Update `CLAUDE.md` with reading timer feature
+- [x] Run `npm run test:e2e` - ensure 100% pass (24/24 tests pass)
+- [x] Run `npm run lint` and `npm run build`
 
-**Status:** ⬜ Not Started
+**Status:** ✅ Complete
 
 ---
 
@@ -87,6 +88,7 @@ Implement user feedback features to improve learning habits and add meaningful c
 ### B1: Design Decision - Which Wolf Gets Hungry?
 
 Options to consider:
+
 1. **Random wolf** - Simple but may feel unfair
 2. **Most recently fed wolf** - Logical (least hungry becomes hungry)
 3. **Wolf matching territory trait** - Thematic (fail courage territory, courage wolf gets hungry)
@@ -206,14 +208,15 @@ Options to consider:
 
 **New territory structure:**
 
-| Territory ID | Name | Icon | Description | Wolf Role |
-|-------------|------|------|-------------|-----------|
-| nouns | Noun Thicket | 🌳 | Identify naming words in the wild | Seeker |
-| verbs | Verb Valley | ⚡ | Spot action words in wolf sentences | Runner |
-| adjectives | Adjective Glade | 🌸 | Find describing words in nature | Painter |
-| adverbs | Adverb Trail | 💨 | Discover how, when, and where words | Whisperer |
+| Territory ID | Name            | Icon | Description                         | Wolf Role |
+| ------------ | --------------- | ---- | ----------------------------------- | --------- |
+| nouns        | Noun Thicket    | 🌳   | Identify naming words in the wild   | Seeker    |
+| verbs        | Verb Valley     | ⚡   | Spot action words in wolf sentences | Runner    |
+| adjectives   | Adjective Glade | 🌸   | Find describing words in nature     | Painter   |
+| adverbs      | Adverb Trail    | 💨   | Discover how, when, and where words | Whisperer |
 
 **New wolf roles needed:**
+
 - Seeker (trait: wisdom) - finds nouns
 - Runner (trait: swiftness) - action-oriented
 - Painter (trait: focus) - descriptive
@@ -281,30 +284,36 @@ Options to consider:
 Distribute existing wordclasses.ts questions:
 
 **To nouns.ts:**
+
 - Q1: "Which is a NOUN in: 'The fierce wolf guarded her territory'?"
 - Q6: "Which is a NOUN in: 'Howling echoed across the frozen mountains'?"
 - Q11: "Which is an abstract NOUN..."
 
 **To verbs.ts:**
+
 - Q2: "Which is the VERB in: 'The pack hunted through the snowy forest'?"
 - Q5: "Which word is a VERB in: 'Luna protects her family fiercely'?"
 - Q9: "Which is the VERB in: 'The determined wolf leapt gracefully...'"
 
 **To adjectives.ts:**
+
 - Q3: "Which is the ADJECTIVE in: 'The silver wolf moved silently...'"
 - Q4: "In 'The young pup played happily', what word class is 'young'?"
 - Q8: "Which word is an ADJECTIVE?"
 - Q10: "In 'The exhausted wolves rested', which TWO words are adjectives?"
 
 **To adverbs.ts:**
+
 - Q7: "What type of word is 'swiftly' in: 'The wolf ran swiftly'?"
 
 **General word class understanding (distribute or create new):**
+
 - Q12: "Which word class can 'run' belong to?" - could go to any or create variations for each
 
 ### D10: Create Additional Questions
 
 Each new territory needs 10-12 questions. After migration:
+
 - nouns.ts: 3 questions - needs 7-9 more
 - verbs.ts: 3 questions - needs 7-9 more
 - adjectives.ts: 4 questions - needs 6-8 more
@@ -360,12 +369,12 @@ npm run build       # Must compile successfully
 
 ### Test Summary by Phase
 
-| Phase | Existing Tests Affected | New Tests Required |
-|-------|------------------------|-------------------|
-| A | Quiz flow tests (add timer waits) | Timer countdown tests |
-| B | None directly | Failure consequence tests |
-| C | Minimal (uses dynamic question count) | Quiz length validation |
-| D | Many (territory references) | New territory tests |
+| Phase | Existing Tests Affected               | New Tests Required        |
+| ----- | ------------------------------------- | ------------------------- |
+| A     | Quiz flow tests (add timer waits)     | Timer countdown tests     |
+| B     | None directly                         | Failure consequence tests |
+| C     | Minimal (uses dynamic question count) | Quiz length validation    |
+| D     | Many (territory references)           | New territory tests       |
 
 ---
 
@@ -373,32 +382,32 @@ npm run build       # Must compile successfully
 
 ### Files to Modify
 
-| File | Changes |
-|------|---------|
-| `src/types/index.ts` | Add WolfRole types, QuizState fields |
-| `src/data/constants.ts` | READING_TIME_SECONDS, QUESTIONS_PER_QUIZ, roleTraits |
-| `src/contexts/GameContext.tsx` | Timer state, failure logic, quiz length limit |
-| `src/components/QuestionRenderer.tsx` | Accept showAnswers prop |
-| `src/screens/QuizScreen.tsx` | Timer countdown effect |
-| `src/screens/CompletionScreen.tsx` | Failure wolf display |
-| `src/data/territories/index.ts` | New territory imports |
-| `src/data/territoryWolves.ts` | New territory wolf mappings |
+| File                                  | Changes                                              |
+| ------------------------------------- | ---------------------------------------------------- |
+| `src/types/index.ts`                  | Add WolfRole types, QuizState fields                 |
+| `src/data/constants.ts`               | READING_TIME_SECONDS, QUESTIONS_PER_QUIZ, roleTraits |
+| `src/contexts/GameContext.tsx`        | Timer state, failure logic, quiz length limit        |
+| `src/components/QuestionRenderer.tsx` | Accept showAnswers prop                              |
+| `src/screens/QuizScreen.tsx`          | Timer countdown effect                               |
+| `src/screens/CompletionScreen.tsx`    | Failure wolf display                                 |
+| `src/data/territories/index.ts`       | New territory imports                                |
+| `src/data/territoryWolves.ts`         | New territory wolf mappings                          |
 
 ### New Files
 
-| File | Purpose |
-|------|---------|
-| `src/components/ReadingTimer.tsx` | 5-second countdown component |
-| `src/data/territories/nouns.ts` | Noun-focused questions |
-| `src/data/territories/verbs.ts` | Verb-focused questions |
-| `src/data/territories/adjectives.ts` | Adjective-focused questions |
-| `src/data/territories/adverbs.ts` | Adverb-focused questions |
-| `e2e/failure-consequences.spec.ts` | Failure consequence tests |
+| File                                 | Purpose                      |
+| ------------------------------------ | ---------------------------- |
+| `src/components/ReadingTimer.tsx`    | 5-second countdown component |
+| `src/data/territories/nouns.ts`      | Noun-focused questions       |
+| `src/data/territories/verbs.ts`      | Verb-focused questions       |
+| `src/data/territories/adjectives.ts` | Adjective-focused questions  |
+| `src/data/territories/adverbs.ts`    | Adverb-focused questions     |
+| `e2e/failure-consequences.spec.ts`   | Failure consequence tests    |
 
 ### Files to Delete
 
-| File | Reason |
-|------|--------|
+| File                                  | Reason                            |
+| ------------------------------------- | --------------------------------- |
 | `src/data/territories/wordclasses.ts` | Replaced by 4 focused territories |
 
 ---

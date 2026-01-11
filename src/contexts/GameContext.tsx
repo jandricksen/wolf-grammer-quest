@@ -18,7 +18,7 @@ import {
 } from "../utils/wolfUtils";
 import { calculateTreatsEarned, applyTreatsToInventory, TreatsEarned } from "../utils/treatUtils";
 import { checkPassingScore, shuffleArray } from "../utils/quizUtils";
-import { FEEDING_COST } from "../data/constants";
+import { FEEDING_COST, READING_TIME_SECONDS } from "../data/constants";
 import { loadPersistedState, savePersistedState } from "../utils/persistenceUtils";
 
 // Pending wolf type (wolf that has been earned and assigned a name)
@@ -58,6 +58,8 @@ interface GameState {
   selectedAnswer: string | null;
   showFeedback: boolean;
   shuffledQuestions: Question[];
+  showAnswers: boolean;
+  readingTimeRemaining: number;
 }
 
 // Game context actions interface
@@ -69,6 +71,8 @@ interface GameActions {
   startTerritory: (territoryId: string) => void;
   selectAnswer: (answer: string) => void;
   nextQuestion: () => void;
+  revealAnswers: () => void;
+  tickReadingTimer: () => void;
 
   // Wolf actions
   setNewWolfName: (name: string) => void;
@@ -128,6 +132,8 @@ export function GameProvider({ children }: GameProviderProps) {
   const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
   const [showFeedback, setShowFeedback] = useState(false);
   const [shuffledQuestions, setShuffledQuestions] = useState<Question[]>([]);
+  const [showAnswers, setShowAnswers] = useState(false);
+  const [readingTimeRemaining, setReadingTimeRemaining] = useState(READING_TIME_SECONDS);
 
   // Load persisted state on mount
   useEffect(() => {
@@ -180,12 +186,15 @@ export function GameProvider({ children }: GameProviderProps) {
     setSelectedAnswer(null);
     setShowFeedback(false);
     setPendingTreats(null);
+    setShowAnswers(false);
+    setReadingTimeRemaining(READING_TIME_SECONDS);
     setScreen("quiz");
   };
 
   // Handle answer selection
   const selectAnswer = (answer: string) => {
-    if (showFeedback || !currentTerritory) return;
+    // Don't allow answer selection if feedback is showing, no territory, or answers not revealed yet
+    if (showFeedback || !currentTerritory || !showAnswers) return;
 
     setSelectedAnswer(answer);
     setShowFeedback(true);
@@ -204,6 +213,8 @@ export function GameProvider({ children }: GameProviderProps) {
       setCurrentQuestionIndex(currentQuestionIndex + 1);
       setSelectedAnswer(null);
       setShowFeedback(false);
+      setShowAnswers(false);
+      setReadingTimeRemaining(READING_TIME_SECONDS);
     } else {
       // Territory complete - calculate final score including the last question
       const currentQ = shuffledQuestions[currentQuestionIndex];
@@ -312,6 +323,16 @@ export function GameProvider({ children }: GameProviderProps) {
     }
   };
 
+  // Reveal answers after reading timer completes
+  const revealAnswers = () => {
+    setShowAnswers(true);
+  };
+
+  // Tick the reading timer down by 1 second
+  const tickReadingTimer = () => {
+    setReadingTimeRemaining((prev) => Math.max(0, prev - 1));
+  };
+
   // Feed a wolf (costs 1 meat chunk, updates lastFedAt)
   const feedWolf = (wolfId: string) => {
     const wolf = pack.find((w) => w.id === wolfId);
@@ -356,12 +377,16 @@ export function GameProvider({ children }: GameProviderProps) {
     selectedAnswer,
     showFeedback,
     shuffledQuestions,
+    showAnswers,
+    readingTimeRemaining,
 
     // Actions
     navigateTo,
     startTerritory,
     selectAnswer,
     nextQuestion,
+    revealAnswers,
+    tickReadingTimer,
     setNewWolfName,
     addWolfToPack,
     selectWolf,

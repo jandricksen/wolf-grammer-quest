@@ -1,6 +1,6 @@
 import { test, expect } from "@playwright/test";
 import { territories } from "../src/data/territories";
-import { getCorrectAnswers, answerQuizQuestions } from "./test-utils";
+import { getCorrectAnswers, answerQuizQuestions, waitForAnswersToAppear } from "./test-utils";
 
 test.describe("Quiz Flow Tests", () => {
   test("complete full quiz journey", async ({ page }) => {
@@ -48,8 +48,8 @@ test.describe("Quiz Flow Tests", () => {
     const territory = territories["apostrophes"];
     const correctAnswers = getCorrectAnswers(territory.questions);
 
-    // Wait for question to fully render
-    await page.waitForTimeout(700);
+    // Wait for reading timer to complete before answers appear
+    await waitForAnswersToAppear(page);
 
     // Find and click a correct answer using data-driven approach
     let answerClicked = false;
@@ -118,8 +118,10 @@ test.describe("Quiz Flow Tests", () => {
     const territory = territories["apostrophes"];
     const correctAnswers = getCorrectAnswers(territory.questions);
 
+    // Wait for reading timer to complete before answers appear
+    await waitForAnswersToAppear(page);
+
     // Answer first question with any correct answer
-    await page.waitForTimeout(700);
     let answerClicked = false;
     for (const answer of correctAnswers) {
       const answerButton = page.getByRole("button", { name: answer, exact: true });
@@ -158,8 +160,10 @@ test.describe("Quiz Flow Tests", () => {
     const territory = territories["apostrophes"];
     const correctAnswers = getCorrectAnswers(territory.questions);
 
+    // Wait for reading timer to complete before answers appear
+    await waitForAnswersToAppear(page);
+
     // Select a correct answer to ensure we can verify feedback
-    await page.waitForTimeout(700);
     for (const answer of correctAnswers) {
       const answerButton = page.getByRole("button", { name: answer, exact: true });
       if (await answerButton.isVisible({ timeout: 500 }).catch(() => false)) {
@@ -178,5 +182,99 @@ test.describe("Quiz Flow Tests", () => {
 
     // Verify next button appears after selecting answer
     await expect(page.getByText(/Next Question|See Results/)).toBeVisible({ timeout: 2000 });
+  });
+
+  test("reading timer shows before answers appear", async ({ page }) => {
+    await page.goto("/");
+
+    // Start a quiz
+    const territoryCard = page.getByRole("button").filter({ hasText: "Apostrophe Forest" });
+    await territoryCard.click();
+
+    // Verify quiz screen loads
+    await expect(page.getByText("Question 1 of")).toBeVisible();
+
+    // Verify reading timer message is visible initially
+    await expect(page.getByText("Read the question carefully...")).toBeVisible();
+
+    // Verify answer buttons are NOT visible during timer
+    const territory = territories["apostrophes"];
+    const correctAnswers = getCorrectAnswers(territory.questions);
+
+    // Check that at least one correct answer is NOT visible yet
+    let anyAnswerVisible = false;
+    for (const answer of correctAnswers) {
+      const answerButton = page.getByRole("button", { name: answer, exact: true });
+      if (await answerButton.isVisible({ timeout: 100 }).catch(() => false)) {
+        anyAnswerVisible = true;
+        break;
+      }
+    }
+    expect(anyAnswerVisible).toBe(false);
+
+    // Wait for timer to complete
+    await waitForAnswersToAppear(page);
+
+    // Now verify answer buttons ARE visible
+    let answerNowVisible = false;
+    for (const answer of correctAnswers) {
+      const answerButton = page.getByRole("button", { name: answer, exact: true });
+      if (await answerButton.isVisible({ timeout: 500 }).catch(() => false)) {
+        answerNowVisible = true;
+        break;
+      }
+    }
+    expect(answerNowVisible).toBe(true);
+
+    // Timer message should be gone
+    await expect(page.getByText("Read the question carefully...")).not.toBeVisible();
+  });
+
+  test("reading timer resets for each question", async ({ page }) => {
+    await page.goto("/");
+
+    // Start a quiz
+    const territoryCard = page.getByRole("button").filter({ hasText: "Apostrophe Forest" });
+    await territoryCard.click();
+
+    await expect(page.getByText("Question 1 of")).toBeVisible();
+
+    // Get correct answers
+    const territory = territories["apostrophes"];
+    const correctAnswers = getCorrectAnswers(territory.questions);
+
+    // Wait for timer and answer first question
+    await waitForAnswersToAppear(page);
+
+    // Click any correct answer
+    for (const answer of correctAnswers) {
+      const answerButton = page.getByRole("button", { name: answer, exact: true });
+      if (await answerButton.isVisible({ timeout: 500 }).catch(() => false)) {
+        await answerButton.click();
+        break;
+      }
+    }
+
+    // Click next question
+    await page.waitForTimeout(500);
+    const nextButton = page.getByText("Next Question");
+    await nextButton.click();
+
+    // Verify we're on question 2
+    await expect(page.getByText("Question 2 of")).toBeVisible();
+
+    // Timer should be showing again for the new question
+    await expect(page.getByText("Read the question carefully...")).toBeVisible();
+
+    // Answer buttons should NOT be visible yet
+    let anyAnswerVisible = false;
+    for (const answer of correctAnswers) {
+      const answerButton = page.getByRole("button", { name: answer, exact: true });
+      if (await answerButton.isVisible({ timeout: 100 }).catch(() => false)) {
+        anyAnswerVisible = true;
+        break;
+      }
+    }
+    expect(anyAnswerVisible).toBe(false);
   });
 });

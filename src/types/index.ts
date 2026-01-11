@@ -91,4 +91,6 @@ export interface QuizState {
   selectedAnswer: string | null;
   showFeedback: boolean;
   questions: Question[];
+  showAnswers: boolean;
+  readingTimeRemaining: number;
 }

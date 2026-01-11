@@ -115,6 +115,13 @@ Wolf names are randomly assigned from a curated list of 64 nature-themed names (
 - +3 bonus treats for 90%+ score
 - Special treats (Wisdom Berry, Swift Meat) for 90%+ scores
 
+**Reading Timer:**
+
+- 5-second countdown before answer options appear
+- Enforces reading the question carefully before answering
+- Timer resets for each new question
+- Configurable via `READING_TIME_SECONDS` constant in `src/data/constants.ts`
+
 ## The 8 Grammar Territories
 
 1. **Apostrophe Forest** 🌲 - Possession vs contraction, it's/its
@@ -142,6 +149,7 @@ The app is currently at **Phase 1** (Wolf Statistics & Treats completed).
 - **Win state celebration** when all territories completed at 80%+
 - **Time-based hunger system** giving treats a purpose
 - **E2E test coverage with Playwright (100% test coverage required)**
+- **Reading timer** - 5-second countdown before answers appear (enforces reading)
 
 **Planned (see DEVELOPMENT_PLAN.md):**
 
@@ -184,6 +192,14 @@ The app is currently at **Phase 1** (Wolf Statistics & Treats completed).
 - `shuffleArray<T>(array: T[]): T[]` - Fisher-Yates shuffle algorithm for randomising questions and answers
 - Questions are shuffled when territory starts (stored in `shuffledQuestions` state)
 - Multiple choice answers are shuffled when each question loads (in `QuestionRenderer`)
+
+**Reading Timer:**
+
+- `revealAnswers()` - Show answer options after timer completes
+- `tickReadingTimer()` - Decrement timer by 1 second
+- Timer state: `showAnswers` (boolean), `readingTimeRemaining` (seconds)
+- Timer resets on `startTerritory()` and `nextQuestion()`
+- Answers cannot be selected until `showAnswers` is true
 
 **Wolf Management:**
 
@@ -333,12 +349,14 @@ When expanding question banks (e.g., from 10 to 25 questions per territory):
 Game progress persists via JSON file storage (using File System Access API) with localStorage fallback for older browsers. State is automatically saved when changes occur (debounced to 1 second).
 
 **Persisted State:**
+
 - Completed territories and scores
 - Wolf pack (with names, traits, roles, and hunger status)
 - Treats inventory
 - Win state
 
 **How It Works:**
+
 - Primary: JSON file (`wolf-grammar-quest-save.json`) for portable, human-readable saves
 - Fallback: localStorage for browsers without File System Access API
 - Auto-save on state changes (1-second debounce)
