@@ -1,5 +1,25 @@
 import type { Page } from "@playwright/test";
-import type { Question } from "../src/types";
+import type {
+  Question,
+  Wolf,
+  CompletedTerritories,
+  TerritoryScores,
+  WolfRole,
+  StatName,
+  Treats,
+} from "../src/types";
+
+// Storage key must match the one in persistenceUtils.ts
+const STORAGE_KEY = "wolfGrammarQuest_v1";
+
+// Persisted state interface (matches source)
+export interface PersistedState {
+  completedTerritories: CompletedTerritories;
+  territoryScores: TerritoryScores;
+  pack: Wolf[];
+  treats: Treats;
+  hasWon: boolean;
+}
 
 /**
  * Extract all correct answers from a question array
@@ -106,4 +126,55 @@ export async function answerQuestionsIncorrectly(
       await nextButton.click();
     }
   }
+}
+
+/**
+ * Inject game state via localStorage before navigating to the app
+ * Tests use the localStorage fallback mechanism for persistence
+ */
+export async function setGameState(page: Page, state: PersistedState): Promise<void> {
+  await page.addInitScript(
+    (args) => {
+      localStorage.setItem(args.key, JSON.stringify(args.state));
+    },
+    { key: STORAGE_KEY, state }
+  );
+}
+
+/**
+ * Create a completed territories object with specified territories marked as complete
+ */
+export function createCompletedTerritories(territoryKeys: string[]): CompletedTerritories {
+  return territoryKeys.reduce((acc, key) => {
+    acc[key] = true;
+    return acc;
+  }, {} as CompletedTerritories);
+}
+
+/**
+ * Create territory scores for completed territories (at passing threshold)
+ */
+export function createTerritoryScores(
+  territoryKeys: string[],
+  scorePerTerritory: number
+): TerritoryScores {
+  return territoryKeys.reduce((acc, key) => {
+    acc[key] = scorePerTerritory;
+    return acc;
+  }, {} as TerritoryScores);
+}
+
+/**
+ * Create a wolf for testing purposes
+ */
+export function createTestWolf(id: string, name: string, role: WolfRole, trait: StatName): Wolf {
+  return {
+    id,
+    name,
+    role,
+    earned: true,
+    fact: "Test wolf fact",
+    trait,
+    lastFedAt: Date.now(),
+  };
 }

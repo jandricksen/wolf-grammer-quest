@@ -1,5 +1,5 @@
 import type { WolfRole, Wolf, StatName } from "../types";
-import { roleTraits, WOLF_NAMES } from "../data/constants";
+import { roleTraits, WOLF_NAMES, HUNGER_THRESHOLD_HOURS } from "../data/constants";
 
 /**
  * Gets a random wolf name that hasn't been used yet.
@@ -34,5 +34,31 @@ export function createInitialWolf(): Wolf {
     earned: true,
     fact: "The alpha wolf leads and protects the pack.",
     trait: "courage",
+    lastFedAt: Date.now(),
   };
+}
+
+/**
+ * Gets the number of hours since a wolf was last fed.
+ */
+export function getHoursSinceFed(wolf: Wolf): number {
+  const now = Date.now();
+  const millisSinceFed = now - wolf.lastFedAt;
+  return millisSinceFed / (1000 * 60 * 60);
+}
+
+/**
+ * Checks if a wolf is hungry (needs feeding).
+ * Returns true if more than HUNGER_THRESHOLD_HOURS have passed since last feeding.
+ */
+export function isWolfHungry(wolf: Wolf): boolean {
+  return getHoursSinceFed(wolf) >= HUNGER_THRESHOLD_HOURS;
+}
+
+/**
+ * Gets the hunger status of a wolf.
+ * Returns "hungry" if the wolf needs feeding, "ready" otherwise.
+ */
+export function getHungerStatus(wolf: Wolf): "ready" | "hungry" {
+  return isWolfHungry(wolf) ? "hungry" : "ready";
 }

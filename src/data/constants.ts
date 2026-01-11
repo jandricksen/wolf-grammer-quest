@@ -105,3 +105,7 @@ export const roleTraits: RoleTraits = {
   Elder: "wisdom",
   Storyteller: "kindness",
 };
+
+// Hunger system constants
+export const HUNGER_THRESHOLD_HOURS = 24;
+export const FEEDING_COST = 1; // Meat chunks per feeding

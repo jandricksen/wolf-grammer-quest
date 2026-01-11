@@ -34,57 +34,47 @@ test.describe("Quiz Flow Tests", () => {
     await expect(page.getByText(/Try Again|Choose Another Territory/).first()).toBeVisible();
   });
 
-  test("test different question types", async ({ page }) => {
+  test("test multiple choice question interaction", async ({ page }) => {
     await page.goto("/");
 
-    // Start "Apostrophe Forest" (has multiple and tap types)
+    // Start "Apostrophe Forest" (all questions are multiple choice)
     const territoryCard = page.getByRole("button").filter({ hasText: "Apostrophe Forest" });
     await territoryCard.click();
 
     // Wait for first question
     await expect(page.getByText("Question 1 of")).toBeVisible();
 
-    // Test tap question: click a word in sentence
-    // Look for the sentence display (amber background box)
-    const wordButton = page
-      .locator("button")
-      .filter({ hasText: /^[a-zA-Z'-]+$/ })
-      .first();
+    // Get correct answers from actual question data (data-driven approach)
+    const territory = territories["apostrophes"];
+    const correctAnswers = getCorrectAnswers(territory.questions);
 
-    if (await wordButton.isVisible({ timeout: 2000 }).catch(() => false)) {
-      // This is a tap question
-      await wordButton.click();
+    // Wait for question to fully render
+    await page.waitForTimeout(700);
 
-      // Verify feedback appears (green or red background)
-      await page.waitForTimeout(500);
-
-      // Check for explanation text (use first() to avoid strict mode violations)
-      const explanationText = page.locator("text=/explanation|shows|belongs/i").first();
-      await expect(explanationText).toBeVisible({ timeout: 3000 });
-
-      // Click next to move to another question
-      const nextButton = page.getByText("Next Question");
-      if (await nextButton.isVisible({ timeout: 2000 }).catch(() => false)) {
-        await nextButton.click();
+    // Find and click a correct answer using data-driven approach
+    let answerClicked = false;
+    for (const answer of correctAnswers) {
+      const answerButton = page.getByRole("button", { name: answer, exact: true });
+      if (await answerButton.isVisible({ timeout: 500 }).catch(() => false)) {
+        await answerButton.click();
+        answerClicked = true;
+        break;
       }
     }
 
-    // Test multiple choice: click an option button
-    const multipleChoiceButton = page
-      .locator("button")
-      .filter({ hasText: /[.!?]$/ })
-      .first();
+    // Verify we successfully clicked an answer
+    expect(answerClicked).toBe(true);
 
-    if (await multipleChoiceButton.isVisible({ timeout: 2000 }).catch(() => false)) {
-      // This is a multiple choice question
-      await multipleChoiceButton.click();
+    // Verify feedback panel appears (green for correct)
+    await page.waitForTimeout(500);
+    const feedbackPanel = page.locator(".bg-green-50, .bg-amber-50");
+    await expect(feedbackPanel.first()).toBeVisible({ timeout: 3000 });
 
-      // Verify feedback appears
-      await page.waitForTimeout(500);
-      await expect(page.locator("text=/explanation|shows|belongs/i").first()).toBeVisible({
-        timeout: 3000,
-      });
-    }
+    // Verify "Correct!" message appears
+    await expect(page.getByText("Correct!")).toBeVisible();
+
+    // Verify Next Question button appears
+    await expect(page.getByText(/Next Question|See Results/)).toBeVisible({ timeout: 2000 });
   });
 
   test("test quiz navigation", async ({ page }) => {
@@ -181,8 +171,8 @@ test.describe("Quiz Flow Tests", () => {
     // Wait for feedback
     await page.waitForTimeout(500);
 
-    // Verify explanation text appears (either correct or wrong explanation)
-    await expect(page.locator("text=/explanation|shows|belongs/i").first()).toBeVisible({
+    // Verify feedback message appears (Correct! or Not quite...)
+    await expect(page.getByText(/Correct!|Not quite/)).toBeVisible({
       timeout: 3000,
     });
 

@@ -26,13 +26,13 @@ The app is being restructured from a single-file `wolf-grammar-quest.jsx` into a
 - **Vite** - Build tool and dev server
 - **Tailwind CSS** - Utility-first styling
 - **Context API** - State management (replacing 16 useState hooks)
-- **Playwright** - End-to-end testing ✅ **100% test coverage (15/15 passing)**
+- **Playwright** - End-to-end testing ✅ **100% test coverage required**
 - **ESLint** - Code quality and bug detection (TypeScript + React rules)
 - **Prettier** - Automatic code formatting
 
 **Core State Management:**
 
-- `screen`: Controls which view is displayed (home, quiz, complete, pack, wolfDetail, inventory)
+- `screen`: Controls which view is displayed (home, quiz, complete, pack, wolfDetail, inventory, win)
 - `territories`: Large nested object containing all 8 grammar territories with questions
 - `pack`: Array of wolf objects with traits, roles, and facts
 - `treats`: Object tracking 4 treat types (meatChunk, wisdomBerry, swiftMeat, goldenKibble)
@@ -46,9 +46,10 @@ The component uses conditional rendering based on the `screen` state variable:
 1. **home** - Map screen showing all 8 territories with progress indicators
 2. **quiz** - Active quiz with questions and immediate feedback
 3. **complete** - Territory completion screen with score, treats earned, and wolf reward
-4. **pack** - Wolf collection view showing all earned wolves
-5. **wolfDetail** - Detailed view of a single wolf with trait
+4. **pack** - Wolf collection view showing all earned wolves with hunger indicators
+5. **wolfDetail** - Detailed view of a single wolf with trait, hunger status, and feeding
 6. **inventory** - Treats inventory and how to earn them
+7. **win** - Victory celebration screen shown when all 8 territories completed at 80%+
 
 ### Data Structures
 
@@ -68,11 +69,7 @@ territories = {
 
 **Question Types:**
 
-- `tap`: Tap a word in a sentence
-- `tap-clause`: Tap multiple words forming a clause (uses correctRange)
-- `tap-word`: Tap a specific word
-- `multiple`: Multiple choice question
-- `fill`: Fill in the blank
+- `multiple`: Multiple choice question (all questions use this type)
 
 Each question has:
 
@@ -88,7 +85,8 @@ Each question has:
   role: 'Scout' | 'Tracker' | 'Hunter' | 'Guardian' | 'Howler' | 'Shadow' | 'Elder' | 'Storyteller',
   earned: true,
   fact: 'Real wolf fact string',
-  trait: 'wisdom' | 'swiftness' | 'courage' | 'kindness' | 'focus'
+  trait: 'wisdom' | 'swiftness' | 'courage' | 'kindness' | 'focus',
+  lastFedAt: 1234567890 // Timestamp in milliseconds
 }
 ```
 
@@ -138,14 +136,15 @@ The app is currently at **Phase 1** (Wolf Statistics & Treats completed).
 
 - Core grammar game with 8 territories
 - Wolf collection with single defining trait per wolf
-- Treat earning system
-- Pack and inventory screens
+- Treat earning system with purpose (wolf feeding)
+- Pack and inventory screens with hunger indicators
 - **Question and answer randomisation** to prevent pattern memorisation
-- **100% E2E test coverage with Playwright (15 passing tests)**
+- **Win state celebration** when all territories completed at 80%+
+- **Time-based hunger system** giving treats a purpose
+- **E2E test coverage with Playwright (100% test coverage required)**
 
 **Planned (see DEVELOPMENT_PLAN.md):**
 
-- Phase 2: Wolf Care & Feeding (hunger system, daily check-ins)
 - Phase 3: Weekly Pack Encounters (story-based challenges)
 - Phase 4: Wolf Growth & Evolution (XP and life stages)
 - Phase 5: Polish & Year 6 Expansion (dragons theme)
@@ -162,7 +161,7 @@ The app is currently at **Phase 1** (Wolf Statistics & Treats completed).
 
 **Question balance:**
 
-- Mix of tap, multiple choice, and fill-in types
+- All questions use multiple choice format
 - 10-12 questions per territory
 - Difficulty appropriate for 10-year-olds
 
@@ -189,8 +188,25 @@ The app is currently at **Phase 1** (Wolf Statistics & Treats completed).
 **Wolf Management:**
 
 - `getWolfTrait(role)` - Get the defining trait for a wolf based on role
-- `addWolfToPack()` - Add named wolf to pack array
+- `addWolfToPack()` - Add named wolf to pack array with `lastFedAt: Date.now()`
 - `getRandomWolfName(usedNames)` - Get unique wolf name from curated list
+- `feedWolf(wolfId)` - Feed a hungry wolf (costs 1 meat chunk, updates `lastFedAt`)
+
+**Hunger System:**
+
+- `isWolfHungry(wolf)` - Check if wolf needs feeding (24+ hours since last fed)
+- `getHoursSinceFed(wolf)` - Calculate hours since wolf was last fed
+- `getHungerStatus(wolf)` - Returns "ready" or "hungry"
+- Wolves start as "ready" when earned
+- Feeding costs 1 meat chunk per wolf
+- Hungry wolves show visual indicators in pack view
+
+**Win Condition:**
+
+- `checkWinCondition(completedTerritories)` - Check if all 8 territories completed at 80%+
+- Automatically navigates to win screen when condition met
+- Win screen shows "Alpha of Alphas" title and achievement stats
+- Players can continue playing after winning
 
 **Treat Calculation:**
 
@@ -235,25 +251,29 @@ The original `wolf-grammar-quest.jsx` (~1,777 lines) has been archived to `wolf-
 **Non-Negotiable Testing Standards:**
 
 - **ALL** Playwright E2E tests MUST pass at 100% before committing ANY changes
-- Current status: **15/15 tests passing (100%)** ✅
+- Current status: **All tests MUST pass (100%)** - no exceptions
 - Run `npm run test:e2e` to verify tests before every commit
 - **Zero tolerance policy**: Any code change that causes a test to fail MUST be fixed immediately
 - Never commit code that breaks existing tests under any circumstances
+- **NEVER lower the test pass threshold below 100%** - If a test is flaky, fix the test, do not skip or ignore it
 - Add new tests for any new features to maintain 100% coverage
 
 **Test Structure:**
 
 - `e2e/screens.spec.ts` - Screen loading and navigation (5 tests)
 - `e2e/quiz-flow.spec.ts` - Quiz journey and question types (5 tests)
+- `e2e/win-condition.spec.ts` - Win state testing with parameterized state (2 tests)
 - `e2e/wolf-earning.spec.ts` - Wolf reward flow and scoring (5 tests)
+- `e2e/hunger.spec.ts` - Hunger system and wolf feeding (5 tests)
 - `e2e/test-utils.ts` - Shared test utilities and helpers
 
 **Running Tests:**
 
 ```bash
-npm run test:e2e              # Run all tests (MUST show 15/15 passing)
+npm run test:e2e              # Run all tests (100% required)
 npm run test:e2e -- --ui      # Run with Playwright UI
 npm run test:e2e -- screens   # Run only screen tests
+npm run test:e2e -- hunger    # Run only hunger tests
 ```
 
 **Test Development Guidelines:**
@@ -270,6 +290,7 @@ npm run test:e2e -- screens   # Run only screen tests
 **Adding Questions to Question Banks:**
 
 When expanding question banks (e.g., from 10 to 25 questions per territory):
+
 - Tests automatically adapt to new question counts
 - No test updates required - tests use `territory.questions.length`
 - Wrong answers are automatically extracted from all question options
@@ -296,7 +317,7 @@ When expanding question banks (e.g., from 10 to 25 questions per territory):
 
 1. Run `npm run lint` to check for code quality issues
 2. Run `npm run format` to auto-format all files
-3. Run `npm run test:e2e` to ensure all 15 tests pass
+3. Run `npm run test:e2e` to ensure all tests pass at 100%
 4. Run `npm run build` to verify TypeScript compiles
 
 **Common ESLint Rules:**
@@ -306,7 +327,22 @@ When expanding question banks (e.g., from 10 to 25 questions per territory):
 - No `autoFocus` prop (accessibility concern)
 - Import React types correctly (`import { type KeyboardEvent } from "react"`)
 
-## Future Considerations
+## Data Persistence
 
-**Data Persistence:**
-Currently no persistence - all state is lost on refresh. Future phases will add localStorage then potentially cloud sync (Firebase/Supabase).
+**Current Implementation:**
+Game progress persists via JSON file storage (using File System Access API) with localStorage fallback for older browsers. State is automatically saved when changes occur (debounced to 1 second).
+
+**Persisted State:**
+- Completed territories and scores
+- Wolf pack (with names, traits, roles, and hunger status)
+- Treats inventory
+- Win state
+
+**How It Works:**
+- Primary: JSON file (`wolf-grammar-quest-save.json`) for portable, human-readable saves
+- Fallback: localStorage for browsers without File System Access API
+- Auto-save on state changes (1-second debounce)
+- Auto-load on app mount
+
+**Future Considerations:**
+Cloud sync (Firebase/Supabase) for cross-device progress.
