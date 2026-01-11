@@ -9,6 +9,14 @@ import {
   InventoryScreen,
   WinScreen,
 } from "./screens";
+import type { TestInitialState } from "./types";
+
+// Declare global window property for test state (development only)
+declare global {
+  interface Window {
+    __TEST_INITIAL_STATE__?: TestInitialState;
+  }
+}
 
 /**
  * AppContent - Main app component with screen routing
@@ -43,8 +51,11 @@ function AppContent() {
  * Wraps the app with GameProvider for state management
  */
 function App() {
+  // Only read test state in development mode
+  const testInitialState = import.meta.env.DEV ? window.__TEST_INITIAL_STATE__ : undefined;
+
   return (
-    <GameProvider>
+    <GameProvider initialState={testInitialState}>
       <AppContent />
     </GameProvider>
   );

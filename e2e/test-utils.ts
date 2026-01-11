@@ -1,5 +1,13 @@
 import type { Page } from "@playwright/test";
-import type { Question } from "../src/types";
+import type {
+  Question,
+  TestInitialState,
+  Wolf,
+  CompletedTerritories,
+  TerritoryScores,
+  WolfRole,
+  StatName,
+} from "../src/types";
 
 /**
  * Extract all correct answers from a question array
@@ -106,4 +114,52 @@ export async function answerQuestionsIncorrectly(
       await nextButton.click();
     }
   }
+}
+
+/**
+ * Inject initial test state before navigating to the app
+ * This sets window.__TEST_INITIAL_STATE__ which the app reads on mount
+ */
+export async function setTestInitialState(page: Page, state: TestInitialState): Promise<void> {
+  await page.addInitScript((testState) => {
+    window.__TEST_INITIAL_STATE__ = testState;
+  }, state);
+}
+
+/**
+ * Create a completed territories object with specified territories marked as complete
+ */
+export function createCompletedTerritories(territoryKeys: string[]): CompletedTerritories {
+  return territoryKeys.reduce((acc, key) => {
+    acc[key] = true;
+    return acc;
+  }, {} as CompletedTerritories);
+}
+
+/**
+ * Create territory scores for completed territories (at passing threshold)
+ */
+export function createTerritoryScores(
+  territoryKeys: string[],
+  scorePerTerritory: number
+): TerritoryScores {
+  return territoryKeys.reduce((acc, key) => {
+    acc[key] = scorePerTerritory;
+    return acc;
+  }, {} as TerritoryScores);
+}
+
+/**
+ * Create a wolf for testing purposes
+ */
+export function createTestWolf(id: string, name: string, role: WolfRole, trait: StatName): Wolf {
+  return {
+    id,
+    name,
+    role,
+    earned: true,
+    fact: "Test wolf fact",
+    trait,
+    lastFedAt: Date.now(),
+  };
 }

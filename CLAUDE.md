@@ -26,7 +26,7 @@ The app is being restructured from a single-file `wolf-grammar-quest.jsx` into a
 - **Vite** - Build tool and dev server
 - **Tailwind CSS** - Utility-first styling
 - **Context API** - State management (replacing 16 useState hooks)
-- **Playwright** - End-to-end testing ✅ **95% test coverage (19/20 tests passing)**
+- **Playwright** - End-to-end testing ✅ **100% test coverage required**
 - **ESLint** - Code quality and bug detection (TypeScript + React rules)
 - **Prettier** - Automatic code formatting
 
@@ -69,11 +69,7 @@ territories = {
 
 **Question Types:**
 
-- `tap`: Tap a word in a sentence
-- `tap-clause`: Tap multiple words forming a clause (uses correctRange)
-- `tap-word`: Tap a specific word
-- `multiple`: Multiple choice question
-- `fill`: Fill in the blank
+- `multiple`: Multiple choice question (all questions use this type)
 
 Each question has:
 
@@ -145,7 +141,7 @@ The app is currently at **Phase 1** (Wolf Statistics & Treats completed).
 - **Question and answer randomisation** to prevent pattern memorisation
 - **Win state celebration** when all territories completed at 80%+
 - **Time-based hunger system** giving treats a purpose
-- **E2E test coverage with Playwright (19/20 tests passing - 95%)**
+- **E2E test coverage with Playwright (100% test coverage required)**
 
 **Planned (see DEVELOPMENT_PLAN.md):**
 
@@ -165,7 +161,7 @@ The app is currently at **Phase 1** (Wolf Statistics & Treats completed).
 
 **Question balance:**
 
-- Mix of tap, multiple choice, and fill-in types
+- All questions use multiple choice format
 - 10-12 questions per territory
 - Difficulty appropriate for 10-year-olds
 
@@ -255,16 +251,18 @@ The original `wolf-grammar-quest.jsx` (~1,777 lines) has been archived to `wolf-
 **Non-Negotiable Testing Standards:**
 
 - **ALL** Playwright E2E tests MUST pass at 100% before committing ANY changes
-- Current status: **19/20 tests passing (95%)** ✅
+- Current status: **All tests MUST pass (100%)** - no exceptions
 - Run `npm run test:e2e` to verify tests before every commit
 - **Zero tolerance policy**: Any code change that causes a test to fail MUST be fixed immediately
 - Never commit code that breaks existing tests under any circumstances
+- **NEVER lower the test pass threshold below 100%** - If a test is flaky, fix the test, do not skip or ignore it
 - Add new tests for any new features to maintain 100% coverage
 
 **Test Structure:**
 
 - `e2e/screens.spec.ts` - Screen loading and navigation (5 tests)
-- `e2e/quiz-flow.spec.ts` - Quiz journey and question types (5 tests) *1 flaky test*
+- `e2e/quiz-flow.spec.ts` - Quiz journey and question types (5 tests)
+- `e2e/win-condition.spec.ts` - Win state testing with parameterized state (2 tests)
 - `e2e/wolf-earning.spec.ts` - Wolf reward flow and scoring (5 tests)
 - `e2e/hunger.spec.ts` - Hunger system and wolf feeding (5 tests)
 - `e2e/test-utils.ts` - Shared test utilities and helpers
@@ -272,7 +270,7 @@ The original `wolf-grammar-quest.jsx` (~1,777 lines) has been archived to `wolf-
 **Running Tests:**
 
 ```bash
-npm run test:e2e              # Run all tests (19/20 passing)
+npm run test:e2e              # Run all tests (100% required)
 npm run test:e2e -- --ui      # Run with Playwright UI
 npm run test:e2e -- screens   # Run only screen tests
 npm run test:e2e -- hunger    # Run only hunger tests
@@ -319,7 +317,7 @@ When expanding question banks (e.g., from 10 to 25 questions per territory):
 
 1. Run `npm run lint` to check for code quality issues
 2. Run `npm run format` to auto-format all files
-3. Run `npm run test:e2e` to ensure all 15 tests pass
+3. Run `npm run test:e2e` to ensure all tests pass at 100%
 4. Run `npm run build` to verify TypeScript compiles
 
 **Common ESLint Rules:**

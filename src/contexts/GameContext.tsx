@@ -8,6 +8,7 @@ import type {
   WolfRole,
   StatName,
   Question,
+  TestInitialState,
 } from "../types";
 import { territories, territoryWolves } from "../data";
 import {
@@ -86,36 +87,46 @@ export const GameContext = createContext<GameContextValue | undefined>(undefined
 // Provider props
 interface GameProviderProps {
   children: ReactNode;
+  initialState?: TestInitialState; // Only used in development/test mode
 }
 
 /**
  * GameProvider - Centralized state management for Wolf Grammar Quest
  * Replaces 16 useState hooks with a single context provider
  */
-export function GameProvider({ children }: GameProviderProps) {
+export function GameProvider({ children, initialState }: GameProviderProps) {
+  // Apply test initial state only in development mode
+  const testState = import.meta.env.DEV ? initialState : undefined;
+
   // Screen navigation
   const [screen, setScreen] = useState<Screen>("home");
 
-  // Pack and wolves
-  const [pack, setPack] = useState<Wolf[]>([createInitialWolf()]);
+  // Pack and wolves - use test state if provided
+  const [pack, setPack] = useState<Wolf[]>(testState?.pack ?? [createInitialWolf()]);
   const [selectedWolf, setSelectedWolf] = useState<Wolf | null>(null);
   const [pendingWolf, setPendingWolf] = useState<PendingWolf | null>(null);
   const [newWolfName, setNewWolfName] = useState("");
   const [showPackReward, setShowPackReward] = useState(false);
 
-  // Treats
-  const [treats, setTreats] = useState<Treats>({
-    meatChunk: 5, // Starting treats to get going
-    wisdomBerry: 0,
-    swiftMeat: 0,
-    goldenKibble: 0,
-  });
+  // Treats - use test state if provided
+  const [treats, setTreats] = useState<Treats>(
+    testState?.treats ?? {
+      meatChunk: 5, // Starting treats to get going
+      wisdomBerry: 0,
+      swiftMeat: 0,
+      goldenKibble: 0,
+    }
+  );
   const [pendingTreats, setPendingTreats] = useState<TreatsEarned | null>(null);
 
-  // Territory progress
-  const [completedTerritories, setCompletedTerritories] = useState<CompletedTerritories>({});
-  const [territoryScores, setTerritoryScores] = useState<TerritoryScores>({});
-  const [hasWon, setHasWon] = useState(false);
+  // Territory progress - use test state if provided
+  const [completedTerritories, setCompletedTerritories] = useState<CompletedTerritories>(
+    testState?.completedTerritories ?? {}
+  );
+  const [territoryScores, setTerritoryScores] = useState<TerritoryScores>(
+    testState?.territoryScores ?? {}
+  );
+  const [hasWon, setHasWon] = useState(testState?.hasWon ?? false);
 
   // Quiz state
   const [currentTerritory, setCurrentTerritory] = useState<string | null>(null);
