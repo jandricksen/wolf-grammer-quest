@@ -1,6 +1,11 @@
 import { test, expect } from "@playwright/test";
 import { territories } from "../src/data/territories";
-import { getCorrectAnswers, answerQuizQuestions, waitForAnswersToAppear } from "./test-utils";
+import {
+  getCorrectAnswers,
+  answerQuizQuestions,
+  waitForAnswersToAppear,
+  getQuizQuestionCount,
+} from "./test-utils";
 
 test.describe("Quiz Flow Tests", () => {
   test("complete full quiz journey", async ({ page }) => {
@@ -17,7 +22,8 @@ test.describe("Quiz Flow Tests", () => {
     // Get correct answers from actual question data
     const territory = territories["apostrophes"];
     const correctAnswers = getCorrectAnswers(territory.questions);
-    const questionCount = territory.questions.length;
+    // Use getQuizQuestionCount to respect QUESTIONS_PER_QUIZ limit
+    const questionCount = getQuizQuestionCount(territory.questions.length);
 
     // Answer all questions correctly to complete the quiz
     await answerQuizQuestions(page, correctAnswers, questionCount);
@@ -276,5 +282,27 @@ test.describe("Quiz Flow Tests", () => {
       }
     }
     expect(anyAnswerVisible).toBe(false);
+  });
+
+  test("quiz shows exactly 10 questions regardless of question bank size", async ({ page }) => {
+    await page.goto("/");
+
+    // Start a territory
+    const territoryCard = page.getByRole("button").filter({ hasText: "Apostrophe Forest" });
+    await territoryCard.click();
+
+    // Verify quiz shows "Question 1 of 10" (standardised quiz length)
+    await expect(page.getByText("Question 1 of 10")).toBeVisible();
+
+    // Get correct answers
+    const territory = territories["apostrophes"];
+    const correctAnswers = getCorrectAnswers(territory.questions);
+    const questionCount = getQuizQuestionCount(territory.questions.length);
+
+    // Answer all questions
+    await answerQuizQuestions(page, correctAnswers, questionCount);
+
+    // Verify completion screen shows correct total
+    await expect(page.getByText(/scored \d+ out of 10/)).toBeVisible({ timeout: 10000 });
   });
 });

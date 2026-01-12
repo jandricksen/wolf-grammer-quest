@@ -159,44 +159,44 @@ Options to consider:
 
 ### C1: Add Quiz Length Constant
 
-- [ ] Update `src/data/constants.ts`:
+- [x] Update `src/data/constants.ts`:
   - Add `QUESTIONS_PER_QUIZ = 10`
 
 ### C2: Update Quiz Selection Logic
 
-- [ ] Update `src/contexts/GameContext.tsx` in `startTerritory()`:
+- [x] Update `src/contexts/GameContext.tsx` in `startTerritory()`:
   - After shuffling questions, take only first `QUESTIONS_PER_QUIZ`
-  - `setShuffledQuestions(shuffleArray(questions).slice(0, QUESTIONS_PER_QUIZ))`
+  - `setShuffledQuestions(shuffled.slice(0, QUESTIONS_PER_QUIZ))`
   - If territory has fewer than 10 questions, use all available
 
 ### C3: Verify Score Calculations
 
-- [ ] Review `calculateTreatsEarned()` in `src/utils/treatUtils.ts`:
-  - Uses `totalQuestions` parameter, so should work automatically
-- [ ] Review `checkPassingScore()` in `src/utils/quizUtils.ts`:
-  - Uses percentage calculation, so should work automatically
-- [ ] Review territory completion display:
-  - Shows "X out of Y" which uses actual question count
+- [x] Review `calculateTreatsEarned()` in `src/utils/treatUtils.ts`:
+  - Uses `totalQuestions` parameter, so works automatically
+- [x] Review `checkPassingScore()` in `src/utils/quizUtils.ts`:
+  - Uses percentage calculation, so works automatically
+- [x] Review territory completion display:
+  - Updated `CompletionScreen.tsx` to use `shuffledQuestions.length` instead of full question bank
 
 ### C4: Minimum Questions Guard
 
-- [ ] Add validation in `startTerritory()`:
-  - Log warning if territory has fewer than `QUESTIONS_PER_QUIZ` questions
+- [x] Add validation in `startTerritory()`:
+  - Logs warning if territory has fewer than `QUESTIONS_PER_QUIZ` questions
   - Game continues with available questions (graceful degradation)
 
 ### E2E Test Updates (Phase C)
 
-- [ ] Update quiz tests to verify exactly 10 questions shown
-- [ ] Tests should continue to work as they use `shuffledQuestions.length`
-- [ ] Add test: "quiz shows exactly 10 questions from larger bank"
+- [x] Update quiz tests to use `getQuizQuestionCount()` helper
+- [x] Tests continue to work with capped question counts
+- [x] Add test: "quiz shows exactly 10 questions regardless of question bank size"
 
 ### Documentation Update (Phase C)
 
-- [ ] Update `CLAUDE.md` with standardised quiz length
-- [ ] Run `npm run test:e2e` - ensure 100% pass
-- [ ] Run `npm run lint` and `npm run build`
+- [x] Update `CLAUDE.md` with standardised quiz length
+- [x] Run `npm run test:e2e` - ensure 100% pass (29/29 tests pass)
+- [x] Run `npm run lint` and `npm run build`
 
-**Status:** ⬜ Not Started
+**Status:** ✅ Complete
 
 ---
 

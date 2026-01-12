@@ -8,7 +8,19 @@ import type {
   StatName,
   Treats,
 } from "../src/types";
-import { READING_TIME_SECONDS, HUNGER_THRESHOLD_HOURS } from "../src/data/constants";
+import {
+  READING_TIME_SECONDS,
+  HUNGER_THRESHOLD_HOURS,
+  QUESTIONS_PER_QUIZ,
+} from "../src/data/constants";
+
+/**
+ * Get the actual number of questions that will be shown in a quiz
+ * (capped at QUESTIONS_PER_QUIZ)
+ */
+export function getQuizQuestionCount(totalQuestions: number): number {
+  return Math.min(totalQuestions, QUESTIONS_PER_QUIZ);
+}
 
 // Storage key must match the one in persistenceUtils.ts
 const STORAGE_KEY = "wolfGrammarQuest_v1";

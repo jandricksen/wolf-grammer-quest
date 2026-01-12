@@ -112,3 +112,6 @@ export const FEEDING_COST = 1; // Meat chunks per feeding
 
 // Reading timer constants
 export const READING_TIME_SECONDS = 5;
+
+// Quiz length constants
+export const QUESTIONS_PER_QUIZ = 10;

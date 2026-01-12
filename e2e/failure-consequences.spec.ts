@@ -8,6 +8,7 @@ import {
   setGameState,
   createTestWolf,
   createHungryWolf,
+  getQuizQuestionCount,
 } from "./test-utils";
 
 test.describe("Failure Consequences", () => {
@@ -31,7 +32,7 @@ test.describe("Failure Consequences", () => {
     const territory = territories["apostrophes"];
     const correctAnswers = getCorrectAnswers(territory.questions);
     const wrongAnswers = getWrongAnswers(territory.questions);
-    const questionCount = territory.questions.length;
+    const questionCount = getQuizQuestionCount(territory.questions.length);
 
     // Answer only 50% questions correctly (below 80% threshold)
     const correctCount = Math.floor(questionCount * 0.5);
@@ -93,7 +94,7 @@ test.describe("Failure Consequences", () => {
     const territory = territories["apostrophes"];
     const correctAnswers = getCorrectAnswers(territory.questions);
     const wrongAnswers = getWrongAnswers(territory.questions);
-    const questionCount = territory.questions.length;
+    const questionCount = getQuizQuestionCount(territory.questions.length);
 
     // Answer all questions incorrectly to fail
     await answerQuestionsIncorrectly(page, wrongAnswers, correctAnswers, questionCount);
@@ -128,7 +129,7 @@ test.describe("Failure Consequences", () => {
     const territory = territories["apostrophes"];
     const correctAnswers = getCorrectAnswers(territory.questions);
     const wrongAnswers = getWrongAnswers(territory.questions);
-    const questionCount = territory.questions.length;
+    const questionCount = getQuizQuestionCount(territory.questions.length);
 
     // Answer all questions incorrectly to fail
     await answerQuestionsIncorrectly(page, wrongAnswers, correctAnswers, questionCount);
@@ -162,7 +163,7 @@ test.describe("Failure Consequences", () => {
     const territory = territories["apostrophes"];
     const correctAnswers = getCorrectAnswers(territory.questions);
     const wrongAnswers = getWrongAnswers(territory.questions);
-    const questionCount = territory.questions.length;
+    const questionCount = getQuizQuestionCount(territory.questions.length);
 
     // Answer all questions incorrectly to fail
     await answerQuestionsIncorrectly(page, wrongAnswers, correctAnswers, questionCount);

@@ -7,6 +7,7 @@ import {
   createCompletedTerritories,
   createTerritoryScores,
   createTestWolf,
+  getQuizQuestionCount,
 } from "./test-utils";
 
 test.describe("Win Condition Tests", () => {
@@ -18,8 +19,8 @@ test.describe("Win Condition Tests", () => {
     const completedKeys = allTerritoryKeys.filter((k) => k !== "directspeech");
     const finalTerritory = "directspeech";
 
-    // Get question count for the final territory
-    const questionCount = territories[finalTerritory].questions.length;
+    // Get question count for the final territory (capped at QUESTIONS_PER_QUIZ)
+    const questionCount = getQuizQuestionCount(territories[finalTerritory].questions.length);
 
     // Create wolves for completed territories (8 wolves including Luna)
     const testWolves = [

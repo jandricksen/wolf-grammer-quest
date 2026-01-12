@@ -1,5 +1,4 @@
 import { useGameState } from "../hooks/useGameState";
-import { territories } from "../data";
 import { treatInfo } from "../data/constants";
 import { WolfRewardModal } from "../components";
 
@@ -12,6 +11,7 @@ export function CompletionScreen() {
     pendingWolf,
     showPackReward,
     failedWolf,
+    shuffledQuestions,
     startTerritory,
     navigateTo,
     addWolfToPack,
@@ -22,8 +22,9 @@ export function CompletionScreen() {
     return null;
   }
 
-  const questions = territories[currentTerritory].questions;
-  const percentage = Math.round((score / questions.length) * 100);
+  // Use shuffledQuestions.length for accurate quiz length (may be limited by QUESTIONS_PER_QUIZ)
+  const totalQuestions = shuffledQuestions.length;
+  const percentage = Math.round((score / totalQuestions) * 100);
   const passed = percentage >= 80;
 
   return (
@@ -34,7 +35,7 @@ export function CompletionScreen() {
           {passed ? "Territory Conquered!" : "Keep Practising!"}
         </h2>
         <p className="text-gray-600 mb-4">
-          You scored {score} out of {questions.length} ({percentage}%)
+          You scored {score} out of {totalQuestions} ({percentage}%)
         </p>
 
         {/* Treats Earned */}

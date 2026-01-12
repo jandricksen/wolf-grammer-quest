@@ -19,7 +19,12 @@ import {
 } from "../utils/wolfUtils";
 import { calculateTreatsEarned, applyTreatsToInventory, TreatsEarned } from "../utils/treatUtils";
 import { checkPassingScore, shuffleArray } from "../utils/quizUtils";
-import { FEEDING_COST, READING_TIME_SECONDS, HUNGER_THRESHOLD_HOURS } from "../data/constants";
+import {
+  FEEDING_COST,
+  READING_TIME_SECONDS,
+  HUNGER_THRESHOLD_HOURS,
+  QUESTIONS_PER_QUIZ,
+} from "../data/constants";
 import { loadPersistedState, savePersistedState } from "../utils/persistenceUtils";
 
 // Pending wolf type (wolf that has been earned and assigned a name)
@@ -179,9 +184,19 @@ export function GameProvider({ children }: GameProviderProps) {
 
   // Start a territory quiz
   const startTerritory = (territoryId: string) => {
-    // Shuffle questions for this quiz session
+    // Shuffle questions and limit to QUESTIONS_PER_QUIZ
     const questions = territories[territoryId].questions;
-    setShuffledQuestions(shuffleArray(questions));
+    const shuffled = shuffleArray(questions);
+
+    // Warn if territory has fewer questions than expected
+    if (questions.length < QUESTIONS_PER_QUIZ) {
+      console.warn(
+        `Territory "${territoryId}" has only ${questions.length} questions (expected ${QUESTIONS_PER_QUIZ})`
+      );
+    }
+
+    // Take only the first QUESTIONS_PER_QUIZ questions (or all if fewer available)
+    setShuffledQuestions(shuffled.slice(0, QUESTIONS_PER_QUIZ));
 
     setCurrentTerritory(territoryId);
     setCurrentQuestionIndex(0);

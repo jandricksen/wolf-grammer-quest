@@ -171,7 +171,8 @@ The app is currently at **Phase 1** (Wolf Statistics & Treats completed).
 **Question balance:**
 
 - All questions use multiple choice format
-- 10-12 questions per territory
+- 10+ questions per territory (question bank can be larger for variety)
+- Each quiz shows exactly 10 questions (configured via `QUESTIONS_PER_QUIZ` constant)
 - Difficulty appropriate for 10-year-olds
 
 **Wolf facts:**
@@ -183,7 +184,7 @@ The app is currently at **Phase 1** (Wolf Statistics & Treats completed).
 
 **Territory Management:**
 
-- `startTerritory(territoryId)` - Initialize quiz for a territory, shuffle questions using `shuffleArray()`
+- `startTerritory(territoryId)` - Initialize quiz for a territory, shuffle questions and limit to `QUESTIONS_PER_QUIZ`
 - `selectAnswer(answer)` - Handle answer selection and show feedback
 - `nextQuestion()` - Advance to next question or completion screen
 - `completeTerritory()` - Calculate score, award treats and wolves
