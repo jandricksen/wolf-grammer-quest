@@ -173,6 +173,8 @@ The app is currently at **Phase 1** (Wolf Statistics & Treats completed).
 - Follow NFER-style question formats
 - Provide both `explanation` (brief, for correct answers) and `wrongExplanation` (extended teaching for wrong answers)
 - Ensure grammar answers are verified for Year 5 UK curriculum accuracy
+- **Questions must match their territory** — noun questions in Noun Thicket, verb questions in Verb Valley, etc.
+- **Each question must have exactly one correct answer** — avoid questions where multiple options could be valid
 
 **Question balance:**
 

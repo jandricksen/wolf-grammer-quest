@@ -109,12 +109,14 @@ export const adjectives: Territory = {
     },
     {
       type: "multiple",
-      question: "Which word could be BOTH an adjective AND a noun depending on the sentence?",
-      options: ["brave", "cold", "quick", "fast"],
+      question:
+        "Which word could be BOTH an adjective AND a noun depending on the sentence?",
+      options: ["brave", "cold", "quick", "tall"],
       correct: "cold",
-      explanation: "'Cold' can be an adjective ('the cold wind') or a noun ('I caught a cold').",
+      explanation:
+        "'Cold' can be an adjective ('the cold wind') or a noun ('I caught a cold').",
       wrongExplanation:
-        "Some words can be different word classes. 'Cold' can be an adjective ('The cold wolf shivered') or a noun ('The cold was unbearable' or 'I have a cold'). Most of the other options are mainly used as adjectives.",
+        "Some words can be different word classes. 'Cold' can be an adjective ('The cold wolf shivered') or a noun ('The cold was unbearable' or 'I have a cold'). The other options (brave, quick, tall) are mainly used as adjectives only.",
     },
   ],
 };

@@ -102,11 +102,11 @@ export const pronouns: Territory = {
         "Both are correct",
         "Neither is correct",
       ],
-      correct: "The wolf who howled was Luna.",
+      correct: "Both are correct",
       explanation:
-        "Use 'who' for people and animals with names/personalities. 'Which' is usually for things.",
+        "In British English, both 'who' and 'which' can be used for animals. 'Who' is often preferred for named animals.",
       wrongExplanation:
-        "When using relative pronouns: use 'who' for people and animals with names or personalities, and use 'which' for things. Since Luna is a named wolf with a personality, we use 'who': 'The wolf who howled was Luna.'",
+        "Relative pronouns (who, which, that) introduce extra information. In British English, both 'who' and 'which' are acceptable for animals. Many writers prefer 'who' for named or personified animals like Luna, but 'which' is also grammatically correct. Both sentences work!",
     },
     {
       type: "multiple",

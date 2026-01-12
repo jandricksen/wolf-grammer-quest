@@ -16,13 +16,12 @@ export const nouns: Territory = {
     },
     {
       type: "multiple",
-      question: "Which is a NOUN in: 'Howling echoed across the frozen mountains'?",
-      options: ["Howling", "echoed", "across", "mountains"],
-      correct: "mountains",
-      explanation:
-        "Mountains is a noun — it names a place. (Howling can be a noun too in this sentence!)",
+      question: "Which is a NOUN in: 'The swift wolf ran quickly'?",
+      options: ["swift", "wolf", "ran", "quickly"],
+      correct: "wolf",
+      explanation: "Wolf is a noun — it names a creature.",
       wrongExplanation:
-        "A noun is a naming word for a person, place, thing, or idea. 'Mountains' names a place, so it's a noun. Interestingly, 'Howling' is also acting as a noun here (the thing that echoed). Words can sometimes be different word classes depending on how they're used!",
+        "A noun is a naming word — it names a person, place, thing, or creature. 'Wolf' names a creature, so it's a noun. 'Swift' is an adjective (describes the wolf), 'ran' is a verb (the action), and 'quickly' is an adverb (how the wolf ran).",
     },
     {
       type: "multiple",
@@ -73,12 +72,12 @@ export const nouns: Territory = {
     },
     {
       type: "multiple",
-      question: "Which word is NOT a noun in: 'The hungry wolves crossed the frozen river'?",
-      options: ["wolves", "river", "hungry", "The"],
-      correct: "hungry",
-      explanation: "'Hungry' is an adjective describing the wolves, not a noun.",
+      question: "Which is a NOUN in: 'The grey wolf howled loudly at the moon'?",
+      options: ["grey", "howled", "loudly", "moon"],
+      correct: "moon",
+      explanation: "'Moon' is a noun — it names a thing in the sky.",
       wrongExplanation:
-        "Nouns are naming words. 'Wolves' and 'river' are nouns (they name things). 'The' is an article (a type of determiner). 'Hungry' is an adjective — it describes the wolves. Only 'hungry' is describing rather than naming.",
+        "A noun is a naming word for a person, place, thing, or creature. 'Moon' names a thing, so it's a noun. 'Grey' is an adjective (describes the wolf), 'howled' is a verb (the action), and 'loudly' is an adverb (how the wolf howled).",
     },
     {
       type: "multiple",
