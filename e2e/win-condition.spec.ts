@@ -11,30 +11,33 @@ import {
 } from "./test-utils";
 
 test.describe("Win Condition Tests", () => {
-  test("completing 8th territory triggers win screen", async ({ page }) => {
+  test("completing final territory triggers win screen", async ({ page }) => {
     // Get all territory keys
     const allTerritoryKeys = Object.keys(territories);
 
-    // Set 7 territories as completed, leave "directspeech" for the test
+    // Set all territories except one as completed, leave "directspeech" for the test
     const completedKeys = allTerritoryKeys.filter((k) => k !== "directspeech");
     const finalTerritory = "directspeech";
 
     // Get question count for the final territory (capped at QUESTIONS_PER_QUIZ)
     const questionCount = getQuizQuestionCount(territories[finalTerritory].questions.length);
 
-    // Create wolves for completed territories (8 wolves including Luna)
+    // Create wolves for completed territories (11 wolves including Luna for 10 completed territories)
     const testWolves = [
       createTestWolf("wolf_luna", "Luna", "Alpha", "courage"),
       createTestWolf("wolf_1", "Shadow", "Scout", "swiftness"),
       createTestWolf("wolf_2", "River", "Tracker", "wisdom"),
-      createTestWolf("wolf_3", "Frost", "Hunter", "courage"),
-      createTestWolf("wolf_4", "Ash", "Guardian", "kindness"),
-      createTestWolf("wolf_5", "Ember", "Howler", "focus"),
-      createTestWolf("wolf_6", "Sage", "Shadow", "swiftness"),
-      createTestWolf("wolf_7", "Willow", "Elder", "wisdom"),
+      createTestWolf("wolf_3", "Frost", "Seeker", "wisdom"),
+      createTestWolf("wolf_4", "Ash", "Runner", "swiftness"),
+      createTestWolf("wolf_5", "Ember", "Painter", "focus"),
+      createTestWolf("wolf_6", "Sage", "Whisperer", "kindness"),
+      createTestWolf("wolf_7", "Willow", "Guardian", "kindness"),
+      createTestWolf("wolf_8", "Storm", "Howler", "focus"),
+      createTestWolf("wolf_9", "Blaze", "Shadow", "swiftness"),
+      createTestWolf("wolf_10", "Mist", "Elder", "wisdom"),
     ];
 
-    // Set up initial state with 7 completed territories
+    // Set up initial state with 10 completed territories
     await setGameState(page, {
       completedTerritories: createCompletedTerritories(completedKeys),
       territoryScores: createTerritoryScores(completedKeys, 10),
@@ -97,19 +100,22 @@ test.describe("Win Condition Tests", () => {
   });
 
   test("win screen displays pack and stats correctly", async ({ page }) => {
-    // Set up state where all 8 territories are already completed
+    // Set up state where all 11 territories are already completed
     const allTerritoryKeys = Object.keys(territories);
 
     const testWolves = [
       createTestWolf("wolf_luna", "Luna", "Alpha", "courage"),
       createTestWolf("wolf_1", "Shadow", "Scout", "swiftness"),
       createTestWolf("wolf_2", "River", "Tracker", "wisdom"),
-      createTestWolf("wolf_3", "Frost", "Hunter", "courage"),
-      createTestWolf("wolf_4", "Ash", "Guardian", "kindness"),
-      createTestWolf("wolf_5", "Ember", "Howler", "focus"),
-      createTestWolf("wolf_6", "Sage", "Shadow", "swiftness"),
-      createTestWolf("wolf_7", "Willow", "Elder", "wisdom"),
-      createTestWolf("wolf_8", "Storm", "Storyteller", "kindness"),
+      createTestWolf("wolf_3", "Frost", "Seeker", "wisdom"),
+      createTestWolf("wolf_4", "Ash", "Runner", "swiftness"),
+      createTestWolf("wolf_5", "Ember", "Painter", "focus"),
+      createTestWolf("wolf_6", "Sage", "Whisperer", "kindness"),
+      createTestWolf("wolf_7", "Willow", "Guardian", "kindness"),
+      createTestWolf("wolf_8", "Storm", "Howler", "focus"),
+      createTestWolf("wolf_9", "Blaze", "Shadow", "swiftness"),
+      createTestWolf("wolf_10", "Mist", "Elder", "wisdom"),
+      createTestWolf("wolf_11", "Raven", "Storyteller", "kindness"),
     ];
 
     await setGameState(page, {
@@ -126,8 +132,8 @@ test.describe("Win Condition Tests", () => {
     // Navigate to pack to verify wolves
     await page.getByRole("button", { name: "View Full Pack" }).click();
 
-    // Verify all 9 wolves are displayed
-    await expect(page.getByText("9 members strong")).toBeVisible();
+    // Verify all 12 wolves are displayed
+    await expect(page.getByText("12 members strong")).toBeVisible();
 
     // Verify specific wolves appear (use first() to avoid strict mode issues with common names)
     await expect(page.getByText("Luna").first()).toBeVisible();

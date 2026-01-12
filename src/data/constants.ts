@@ -104,6 +104,10 @@ export const roleTraits: RoleTraits = {
   Shadow: "swiftness",
   Elder: "wisdom",
   Storyteller: "kindness",
+  Seeker: "wisdom",
+  Runner: "swiftness",
+  Painter: "focus",
+  Whisperer: "kindness",
 };
 
 // Hunger system constants

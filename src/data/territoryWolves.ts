@@ -12,10 +12,25 @@ export const territoryWolves: TerritoryWolves = {
     fact: "Wolves have about 200 million scent cells — humans have only 5 million!",
     statTemplate: "Tracker",
   },
-  wordclasses: {
-    role: "Hunter",
+  nouns: {
+    role: "Seeker",
+    fact: "Wolves can hear sounds up to 10 miles away in open terrain.",
+    statTemplate: "Seeker",
+  },
+  verbs: {
+    role: "Runner",
     fact: "A wolf pack can travel 30 miles in a single day.",
-    statTemplate: "Hunter",
+    statTemplate: "Runner",
+  },
+  adjectives: {
+    role: "Painter",
+    fact: "Wolves see the world in shades of blue and yellow, not red and green.",
+    statTemplate: "Painter",
+  },
+  adverbs: {
+    role: "Whisperer",
+    fact: "Wolves communicate through body language, scent marking, and vocalisations.",
+    statTemplate: "Whisperer",
   },
   pronouns: {
     role: "Guardian",

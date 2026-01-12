@@ -33,7 +33,7 @@ The app is being restructured from a single-file `wolf-grammar-quest.jsx` into a
 **Core State Management:**
 
 - `screen`: Controls which view is displayed (home, quiz, complete, pack, wolfDetail, inventory, win)
-- `territories`: Large nested object containing all 8 grammar territories with questions
+- `territories`: Large nested object containing all 11 grammar territories with questions
 - `pack`: Array of wolf objects with traits, roles, and facts
 - `treats`: Object tracking 4 treat types (meatChunk, wisdomBerry, swiftMeat, goldenKibble)
 - `completedTerritories`: Object tracking which territories have been finished
@@ -43,13 +43,13 @@ The app is being restructured from a single-file `wolf-grammar-quest.jsx` into a
 
 The component uses conditional rendering based on the `screen` state variable:
 
-1. **home** - Map screen showing all 8 territories with progress indicators
+1. **home** - Map screen showing all 11 territories with progress indicators
 2. **quiz** - Active quiz with questions and immediate feedback
 3. **complete** - Territory completion screen with score, treats earned, and wolf reward
 4. **pack** - Wolf collection view showing all earned wolves with hunger indicators
 5. **wolfDetail** - Detailed view of a single wolf with trait, hunger status, and feeding
 6. **inventory** - Treats inventory and how to earn them
-7. **win** - Victory celebration screen shown when all 8 territories completed at 80%+
+7. **win** - Victory celebration screen shown when all 11 territories completed at 80%+
 
 ### Data Structures
 
@@ -63,7 +63,7 @@ territories = {
     icon: '🌲',
     questions: [...]  // Array of 10+ question objects
   },
-  // 8 territories total
+  // 11 territories total
 }
 ```
 
@@ -82,7 +82,7 @@ Each question has:
 {
   id: 'unique_id',
   name: 'Auto-generated name',
-  role: 'Scout' | 'Tracker' | 'Hunter' | 'Guardian' | 'Howler' | 'Shadow' | 'Elder' | 'Storyteller',
+  role: 'Scout' | 'Tracker' | 'Seeker' | 'Runner' | 'Painter' | 'Whisperer' | 'Guardian' | 'Howler' | 'Shadow' | 'Elder' | 'Storyteller',
   earned: true,
   fact: 'Real wolf fact string',
   trait: 'wisdom' | 'swiftness' | 'courage' | 'kindness' | 'focus',
@@ -98,7 +98,10 @@ Each wolf role has one defining trait. See `roleTraits` in constants and `getWol
 | Alpha       | courage   |
 | Scout       | swiftness |
 | Tracker     | wisdom    |
-| Hunter      | courage   |
+| Seeker      | wisdom    |
+| Runner      | swiftness |
+| Painter     | focus     |
+| Whisperer   | kindness  |
 | Guardian    | kindness  |
 | Howler      | focus     |
 | Shadow      | swiftness |
@@ -122,16 +125,19 @@ Wolf names are randomly assigned from a curated list of 64 nature-themed names (
 - Timer resets for each new question
 - Configurable via `READING_TIME_SECONDS` constant in `src/data/constants.ts`
 
-## The 8 Grammar Territories
+## The 11 Grammar Territories
 
 1. **Apostrophe Forest** 🌲 - Possession vs contraction, it's/its
 2. **Clause Canyon** 🏔️ - Subordinate clauses and subordinating conjunctions
-3. **Word Class Wilderness** 🌿 - Nouns, verbs, adjectives, adverbs
-4. **Pronoun Peak** ⛰️ - Personal, relative, and possessive pronouns
-5. **Conjunction Creek** 🌊 - Coordinating (FANBOYS) vs subordinating
-6. **Prefix & Suffix Summit** 🗻 - un-, re-, dis-, -ly, -ful, -less, etc.
-7. **Comma Cave** 🦇 - Lists, fronted adverbials, parenthesis
-8. **Speech Cavern** 💬 - Direct speech punctuation rules
+3. **Noun Thicket** 🌳 - Identify naming words (common, proper, abstract, collective nouns)
+4. **Verb Valley** ⚡ - Spot action words (tenses, modal verbs, imperatives)
+5. **Adjective Glade** 🌸 - Find describing words (comparative, superlative, possessive)
+6. **Adverb Trail** 💨 - Discover how, when, and where words (manner, time, place, degree)
+7. **Pronoun Peak** ⛰️ - Personal, relative, and possessive pronouns
+8. **Conjunction Creek** 🌊 - Coordinating (FANBOYS) vs subordinating
+9. **Prefix & Suffix Summit** 🗻 - un-, re-, dis-, -ly, -ful, -less, etc.
+10. **Comma Cave** 🦇 - Lists, fronted adverbials, parenthesis
+11. **Speech Cavern** 💬 - Direct speech punctuation rules
 
 Each territory unlocks a unique wolf role when completed at 80%+.
 
@@ -141,7 +147,7 @@ The app is currently at **Phase 1** (Wolf Statistics & Treats completed).
 
 **Completed:**
 
-- Core grammar game with 8 territories
+- Core grammar game with 11 territories (word classes split into 4 focused territories)
 - Wolf collection with single defining trait per wolf
 - Treat earning system with purpose (wolf feeding)
 - Pack and inventory screens with hunger indicators
@@ -230,7 +236,7 @@ The app is currently at **Phase 1** (Wolf Statistics & Treats completed).
 
 **Win Condition:**
 
-- `checkWinCondition(completedTerritories)` - Check if all 8 territories completed at 80%+
+- `checkWinCondition(completedTerritories)` - Check if all 11 territories completed at 80%+
 - Automatically navigates to win screen when condition met
 - Win screen shows "Alpha of Alphas" title and achievement stats
 - Players can continue playing after winning

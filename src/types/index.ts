@@ -31,7 +31,11 @@ export type WolfRole =
   | "Howler"
   | "Shadow"
   | "Elder"
-  | "Storyteller";
+  | "Storyteller"
+  | "Seeker"
+  | "Runner"
+  | "Painter"
+  | "Whisperer";
 
 export interface Wolf {
   id: string;
