@@ -177,6 +177,40 @@ export function GameProvider({ children }: GameProviderProps) {
     return () => clearTimeout(timeoutId);
   }, [completedTerritories, territoryScores, pack, treats, hasWon, isLoading]);
 
+  // Load persisted state on mount
+  useEffect(() => {
+    const loadState = async () => {
+      const persisted = await loadPersistedState();
+      if (persisted) {
+        setPack(persisted.pack);
+        setTreats(persisted.treats);
+        setCompletedTerritories(persisted.completedTerritories);
+        setTerritoryScores(persisted.territoryScores);
+        setHasWon(persisted.hasWon);
+      }
+      setIsLoading(false);
+    };
+    loadState();
+  }, []);
+
+  // Auto-save state on changes (debounced)
+  useEffect(() => {
+    // Don't save during initial load
+    if (isLoading) return;
+
+    const timeoutId = setTimeout(() => {
+      savePersistedState({
+        completedTerritories,
+        territoryScores,
+        pack,
+        treats,
+        hasWon,
+      });
+    }, 1000); // Debounce 1 second
+
+    return () => clearTimeout(timeoutId);
+  }, [completedTerritories, territoryScores, pack, treats, hasWon, isLoading]);
+
   // Navigation action
   const navigateTo = (newScreen: Screen) => {
     setScreen(newScreen);
