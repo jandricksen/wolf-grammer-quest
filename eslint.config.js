@@ -35,6 +35,12 @@ export default [
         clearTimeout: 'readonly',
         setInterval: 'readonly',
         clearInterval: 'readonly',
+        localStorage: 'readonly',
+        Blob: 'readonly',
+        File: 'readonly',
+        Event: 'readonly',
+        HTMLInputElement: 'readonly',
+        globalThis: 'readonly',
       },
     },
     plugins: {

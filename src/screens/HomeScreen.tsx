@@ -1,5 +1,6 @@
 import { useGameState } from "../hooks/useGameState";
 import { territories } from "../data";
+import { QUESTIONS_PER_QUIZ } from "../data/constants";
 import { TreatsDisplay, TerritoryCard, WolfTraitDisplay } from "../components";
 
 export function HomeScreen() {
@@ -76,7 +77,7 @@ export function HomeScreen() {
               isCompleted={completedTerritories[key] || false}
               score={
                 territoryScores[key]
-                  ? { score: territoryScores[key], total: territory.questions.length }
+                  ? { score: territoryScores[key], total: QUESTIONS_PER_QUIZ }
                   : undefined
               }
               onStart={() => startTerritory(key)}

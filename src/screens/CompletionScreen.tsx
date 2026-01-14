@@ -1,5 +1,4 @@
 import { useGameState } from "../hooks/useGameState";
-import { territories } from "../data";
 import { treatInfo } from "../data/constants";
 import { WolfRewardModal } from "../components";
 
@@ -11,6 +10,8 @@ export function CompletionScreen() {
     pendingTreats,
     pendingWolf,
     showPackReward,
+    failedWolf,
+    shuffledQuestions,
     startTerritory,
     navigateTo,
     addWolfToPack,
@@ -21,8 +22,9 @@ export function CompletionScreen() {
     return null;
   }
 
-  const questions = territories[currentTerritory].questions;
-  const percentage = Math.round((score / questions.length) * 100);
+  // Use shuffledQuestions.length for accurate quiz length (may be limited by QUESTIONS_PER_QUIZ)
+  const totalQuestions = shuffledQuestions.length;
+  const percentage = Math.round((score / totalQuestions) * 100);
   const passed = percentage >= 80;
 
   return (
@@ -33,7 +35,7 @@ export function CompletionScreen() {
           {passed ? "Territory Conquered!" : "Keep Practising!"}
         </h2>
         <p className="text-gray-600 mb-4">
-          You scored {score} out of {questions.length} ({percentage}%)
+          You scored {score} out of {totalQuestions} ({percentage}%)
         </p>
 
         {/* Treats Earned */}
@@ -80,6 +82,20 @@ export function CompletionScreen() {
             <div className="text-slate-700 font-medium">Keep going!</div>
             <div className="text-slate-500 text-sm">
               Score 80% or higher to claim this territory and earn a wolf.
+            </div>
+          </div>
+        )}
+
+        {/* Wolf became hungry due to failure */}
+        {!passed && failedWolf && (
+          <div
+            className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6"
+            data-testid="failed-wolf-message"
+          >
+            <div className="text-red-800 font-medium">🐺 Oh no!</div>
+            <div className="text-red-600 text-sm">
+              Your poor score has left <span className="font-bold">{failedWolf.name}</span> hungry!
+              Earn treats to feed them.
             </div>
           </div>
         )}

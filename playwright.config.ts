@@ -22,6 +22,9 @@ export default defineConfig({
   /* Reporter to use */
   reporter: "html",
 
+  /* Increase timeout for quiz tests with 5-second reading timer per question */
+  timeout: 120000,
+
   /* Shared settings for all projects */
   use: {
     /* Base URL to use in actions like `await page.goto('/')` */

@@ -5,6 +5,7 @@ import {
   getWrongAnswers,
   answerQuizQuestions,
   answerQuestionsIncorrectly,
+  getQuizQuestionCount,
 } from "./test-utils";
 
 test.describe("Wolf Earning Tests", () => {
@@ -21,7 +22,7 @@ test.describe("Wolf Earning Tests", () => {
     // Get correct answers from actual question data
     const territory = territories["apostrophes"];
     const correctAnswers = getCorrectAnswers(territory.questions);
-    const questionCount = territory.questions.length;
+    const questionCount = getQuizQuestionCount(territory.questions.length);
 
     // Answer all questions correctly to earn wolf
     await answerQuizQuestions(page, correctAnswers, questionCount);
@@ -48,7 +49,7 @@ test.describe("Wolf Earning Tests", () => {
     // Get correct answers from actual question data
     const territory = territories["apostrophes"];
     const correctAnswers = getCorrectAnswers(territory.questions);
-    const questionCount = territory.questions.length;
+    const questionCount = getQuizQuestionCount(territory.questions.length);
 
     // Answer all questions correctly to ensure 80%+ score
     await answerQuizQuestions(page, correctAnswers, questionCount);
@@ -119,7 +120,7 @@ test.describe("Wolf Earning Tests", () => {
     const territory = territories["apostrophes"];
     const correctAnswers = getCorrectAnswers(territory.questions);
     const wrongAnswers = getWrongAnswers(territory.questions);
-    const questionCount = territory.questions.length;
+    const questionCount = getQuizQuestionCount(territory.questions.length);
 
     // Answer only 50% questions correctly (below 80% threshold)
     const correctCount = Math.floor(questionCount * 0.5);
@@ -149,7 +150,7 @@ test.describe("Wolf Earning Tests", () => {
     // Get correct answers from actual question data
     const territory = territories["apostrophes"];
     const correctAnswers = getCorrectAnswers(territory.questions);
-    const questionCount = territory.questions.length;
+    const questionCount = getQuizQuestionCount(territory.questions.length);
 
     // Answer all questions correctly for 100% score
     await answerQuizQuestions(page, correctAnswers, questionCount);
