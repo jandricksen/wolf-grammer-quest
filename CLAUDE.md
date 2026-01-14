@@ -86,7 +86,8 @@ Each question has:
   earned: true,
   fact: 'Real wolf fact string',
   trait: 'wisdom' | 'swiftness' | 'courage' | 'kindness' | 'focus',
-  lastFedAt: 1234567890 // Timestamp in milliseconds
+  lastFedAt: 1234567890, // Timestamp in milliseconds
+  backstory?: 'Short fantasy-themed backstory (1-2 sentences) connected to territory and trait'
 }
 ```
 
