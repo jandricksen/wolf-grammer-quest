@@ -69,13 +69,13 @@ Replace test-specific code (`TestInitialState`, `window.__TEST_INITIAL_STATE__`)
   }
 
   // Check if File System Access API is available
-  export function isFileSystemAccessSupported(): boolean
+  export function isFileSystemAccessSupported(): boolean;
 
   // Load from JSON file (primary) or localStorage (fallback)
-  export async function loadPersistedState(): Promise<PersistedState | null>
+  export async function loadPersistedState(): Promise<PersistedState | null>;
 
   // Save to JSON file (primary) or localStorage (fallback)
-  export async function savePersistedState(state: PersistedState): Promise<void>
+  export async function savePersistedState(state: PersistedState): Promise<void>;
   ```
 
 ### B2: Load State on Mount
@@ -119,9 +119,12 @@ Replace test-specific code (`TestInitialState`, `window.__TEST_INITIAL_STATE__`)
   - Change implementation to use localStorage (tests use fallback mechanism):
     ```typescript
     export async function setGameState(page: Page, state: PersistedState): Promise<void> {
-      await page.addInitScript((args) => {
-        localStorage.setItem(args.key, JSON.stringify(args.state));
-      }, { key: STORAGE_KEY, state });
+      await page.addInitScript(
+        (args) => {
+          localStorage.setItem(args.key, JSON.stringify(args.state));
+        },
+        { key: STORAGE_KEY, state }
+      );
     }
     ```
   - Note: Tests will use localStorage fallback since File System Access API requires user gestures
@@ -172,19 +175,19 @@ Note: Manual testing can be performed in dev environment (`npm run dev`).
 
 ### Files to Modify
 
-| File | Changes |
-|------|---------|
-| `src/types/index.ts` | Remove `TestInitialState` interface |
-| `src/App.tsx` | Remove window declaration and test state logic |
-| `src/contexts/GameContext.tsx` | Remove initialState prop, add async persistence load/save |
-| `e2e/test-utils.ts` | Replace `setTestInitialState` with `setGameState` (localStorage) |
-| `e2e/win-condition.spec.ts` | Update to use `setGameState` |
-| `CLAUDE.md` | Document JSON file persistence with localStorage fallback |
+| File                           | Changes                                                          |
+| ------------------------------ | ---------------------------------------------------------------- |
+| `src/types/index.ts`           | Remove `TestInitialState` interface                              |
+| `src/App.tsx`                  | Remove window declaration and test state logic                   |
+| `src/contexts/GameContext.tsx` | Remove initialState prop, add async persistence load/save        |
+| `e2e/test-utils.ts`            | Replace `setTestInitialState` with `setGameState` (localStorage) |
+| `e2e/win-condition.spec.ts`    | Update to use `setGameState`                                     |
+| `CLAUDE.md`                    | Document JSON file persistence with localStorage fallback        |
 
 ### New Files
 
-| File | Purpose |
-|------|---------|
+| File                            | Purpose                                                    |
+| ------------------------------- | ---------------------------------------------------------- |
 | `src/utils/persistenceUtils.ts` | JSON file persistence with localStorage fallback utilities |
 
 ### Files to Delete

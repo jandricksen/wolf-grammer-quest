@@ -7,10 +7,13 @@ test.describe("Screen Loading Tests", () => {
     // Verify page title
     await expect(page.getByText("Wolf Grammar Quest")).toBeVisible();
 
-    // Check all 8 territory cards are visible
+    // Check all 11 territory cards are visible
     await expect(page.getByText("Apostrophe Forest")).toBeVisible();
     await expect(page.getByText("Clause Canyon")).toBeVisible();
-    await expect(page.getByText("Word Class Wilderness")).toBeVisible();
+    await expect(page.getByText("Noun Thicket")).toBeVisible();
+    await expect(page.getByText("Verb Valley")).toBeVisible();
+    await expect(page.getByText("Adjective Glade")).toBeVisible();
+    await expect(page.getByText("Adverb Trail")).toBeVisible();
     await expect(page.getByText("Pronoun Peak")).toBeVisible();
     await expect(page.getByText("Conjunction Creek")).toBeVisible();
     await expect(page.getByText("Prefix & Suffix Summit")).toBeVisible();

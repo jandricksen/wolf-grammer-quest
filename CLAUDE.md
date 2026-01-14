@@ -33,7 +33,7 @@ The app is being restructured from a single-file `wolf-grammar-quest.jsx` into a
 **Core State Management:**
 
 - `screen`: Controls which view is displayed (home, quiz, complete, pack, wolfDetail, inventory, win)
-- `territories`: Large nested object containing all 8 grammar territories with questions
+- `territories`: Large nested object containing all 11 grammar territories with questions
 - `pack`: Array of wolf objects with traits, roles, and facts
 - `treats`: Object tracking 4 treat types (meatChunk, wisdomBerry, swiftMeat, goldenKibble)
 - `completedTerritories`: Object tracking which territories have been finished
@@ -43,13 +43,13 @@ The app is being restructured from a single-file `wolf-grammar-quest.jsx` into a
 
 The component uses conditional rendering based on the `screen` state variable:
 
-1. **home** - Map screen showing all 8 territories with progress indicators
+1. **home** - Map screen showing all 11 territories with progress indicators
 2. **quiz** - Active quiz with questions and immediate feedback
 3. **complete** - Territory completion screen with score, treats earned, and wolf reward
 4. **pack** - Wolf collection view showing all earned wolves with hunger indicators
 5. **wolfDetail** - Detailed view of a single wolf with trait, hunger status, and feeding
 6. **inventory** - Treats inventory and how to earn them
-7. **win** - Victory celebration screen shown when all 8 territories completed at 80%+
+7. **win** - Victory celebration screen shown when all 11 territories completed at 80%+
 
 ### Data Structures
 
@@ -63,7 +63,7 @@ territories = {
     icon: '🌲',
     questions: [...]  // Array of 10+ question objects
   },
-  // 8 territories total
+  // 11 territories total
 }
 ```
 
@@ -82,7 +82,7 @@ Each question has:
 {
   id: 'unique_id',
   name: 'Auto-generated name',
-  role: 'Scout' | 'Tracker' | 'Hunter' | 'Guardian' | 'Howler' | 'Shadow' | 'Elder' | 'Storyteller',
+  role: 'Scout' | 'Tracker' | 'Seeker' | 'Runner' | 'Painter' | 'Whisperer' | 'Guardian' | 'Howler' | 'Shadow' | 'Elder' | 'Storyteller',
   earned: true,
   fact: 'Real wolf fact string',
   trait: 'wisdom' | 'swiftness' | 'courage' | 'kindness' | 'focus',
@@ -98,7 +98,10 @@ Each wolf role has one defining trait. See `roleTraits` in constants and `getWol
 | Alpha       | courage   |
 | Scout       | swiftness |
 | Tracker     | wisdom    |
-| Hunter      | courage   |
+| Seeker      | wisdom    |
+| Runner      | swiftness |
+| Painter     | focus     |
+| Whisperer   | kindness  |
 | Guardian    | kindness  |
 | Howler      | focus     |
 | Shadow      | swiftness |
@@ -115,16 +118,26 @@ Wolf names are randomly assigned from a curated list of 64 nature-themed names (
 - +3 bonus treats for 90%+ score
 - Special treats (Wisdom Berry, Swift Meat) for 90%+ scores
 
-## The 8 Grammar Territories
+**Reading Timer:**
+
+- 5-second countdown before answer options appear
+- Enforces reading the question carefully before answering
+- Timer resets for each new question
+- Configurable via `READING_TIME_SECONDS` constant in `src/data/constants.ts`
+
+## The 11 Grammar Territories
 
 1. **Apostrophe Forest** 🌲 - Possession vs contraction, it's/its
 2. **Clause Canyon** 🏔️ - Subordinate clauses and subordinating conjunctions
-3. **Word Class Wilderness** 🌿 - Nouns, verbs, adjectives, adverbs
-4. **Pronoun Peak** ⛰️ - Personal, relative, and possessive pronouns
-5. **Conjunction Creek** 🌊 - Coordinating (FANBOYS) vs subordinating
-6. **Prefix & Suffix Summit** 🗻 - un-, re-, dis-, -ly, -ful, -less, etc.
-7. **Comma Cave** 🦇 - Lists, fronted adverbials, parenthesis
-8. **Speech Cavern** 💬 - Direct speech punctuation rules
+3. **Noun Thicket** 🌳 - Identify naming words (common, proper, abstract, collective nouns)
+4. **Verb Valley** ⚡ - Spot action words (tenses, modal verbs, imperatives)
+5. **Adjective Glade** 🌸 - Find describing words (comparative, superlative, possessive)
+6. **Adverb Trail** 💨 - Discover how, when, and where words (manner, time, place, degree)
+7. **Pronoun Peak** ⛰️ - Personal, relative, and possessive pronouns
+8. **Conjunction Creek** 🌊 - Coordinating (FANBOYS) vs subordinating
+9. **Prefix & Suffix Summit** 🗻 - un-, re-, dis-, -ly, -ful, -less, etc.
+10. **Comma Cave** 🦇 - Lists, fronted adverbials, parenthesis
+11. **Speech Cavern** 💬 - Direct speech punctuation rules
 
 Each territory unlocks a unique wolf role when completed at 80%+.
 
@@ -134,7 +147,7 @@ The app is currently at **Phase 1** (Wolf Statistics & Treats completed).
 
 **Completed:**
 
-- Core grammar game with 8 territories
+- Core grammar game with 11 territories (word classes split into 4 focused territories)
 - Wolf collection with single defining trait per wolf
 - Treat earning system with purpose (wolf feeding)
 - Pack and inventory screens with hunger indicators
@@ -142,6 +155,8 @@ The app is currently at **Phase 1** (Wolf Statistics & Treats completed).
 - **Win state celebration** when all territories completed at 80%+
 - **Time-based hunger system** giving treats a purpose
 - **E2E test coverage with Playwright (100% test coverage required)**
+- **Reading timer** - 5-second countdown before answers appear (enforces reading)
+- **Failure consequences** - failing a territory makes the most recently fed wolf hungry
 
 **Planned (see DEVELOPMENT_PLAN.md):**
 
@@ -158,11 +173,14 @@ The app is currently at **Phase 1** (Wolf Statistics & Treats completed).
 - Follow NFER-style question formats
 - Provide both `explanation` (brief, for correct answers) and `wrongExplanation` (extended teaching for wrong answers)
 - Ensure grammar answers are verified for Year 5 UK curriculum accuracy
+- **Questions must match their territory** — noun questions in Noun Thicket, verb questions in Verb Valley, etc.
+- **Each question must have exactly one correct answer** — avoid questions where multiple options could be valid
 
 **Question balance:**
 
 - All questions use multiple choice format
-- 10-12 questions per territory
+- 10+ questions per territory (question bank can be larger for variety)
+- Each quiz shows exactly 10 questions (configured via `QUESTIONS_PER_QUIZ` constant)
 - Difficulty appropriate for 10-year-olds
 
 **Wolf facts:**
@@ -174,7 +192,7 @@ The app is currently at **Phase 1** (Wolf Statistics & Treats completed).
 
 **Territory Management:**
 
-- `startTerritory(territoryId)` - Initialize quiz for a territory, shuffle questions using `shuffleArray()`
+- `startTerritory(territoryId)` - Initialize quiz for a territory, shuffle questions and limit to `QUESTIONS_PER_QUIZ`
 - `selectAnswer(answer)` - Handle answer selection and show feedback
 - `nextQuestion()` - Advance to next question or completion screen
 - `completeTerritory()` - Calculate score, award treats and wolves
@@ -184,6 +202,14 @@ The app is currently at **Phase 1** (Wolf Statistics & Treats completed).
 - `shuffleArray<T>(array: T[]): T[]` - Fisher-Yates shuffle algorithm for randomising questions and answers
 - Questions are shuffled when territory starts (stored in `shuffledQuestions` state)
 - Multiple choice answers are shuffled when each question loads (in `QuestionRenderer`)
+
+**Reading Timer:**
+
+- `revealAnswers()` - Show answer options after timer completes
+- `tickReadingTimer()` - Decrement timer by 1 second
+- Timer state: `showAnswers` (boolean), `readingTimeRemaining` (seconds)
+- Timer resets on `startTerritory()` and `nextQuestion()`
+- Answers cannot be selected until `showAnswers` is true
 
 **Wolf Management:**
 
@@ -201,9 +227,18 @@ The app is currently at **Phase 1** (Wolf Statistics & Treats completed).
 - Feeding costs 1 meat chunk per wolf
 - Hungry wolves show visual indicators in pack view
 
+**Failure Consequences:**
+
+- When failing a territory (below 80%), the most recently fed wolf becomes hungry
+- Logic finds wolves that are not already hungry, sorted by most recently fed
+- Sets `lastFedAt` to make the wolf immediately hungry (24+ hours in the past)
+- `failedWolf` state stores `{ id, name }` for display on completion screen
+- If all wolves are already hungry, no additional consequence occurs
+- Completion screen shows "Your poor score has left [Wolf Name] hungry!" message
+
 **Win Condition:**
 
-- `checkWinCondition(completedTerritories)` - Check if all 8 territories completed at 80%+
+- `checkWinCondition(completedTerritories)` - Check if all 11 territories completed at 80%+
 - Automatically navigates to win screen when condition met
 - Win screen shows "Alpha of Alphas" title and achievement stats
 - Players can continue playing after winning
@@ -261,10 +296,11 @@ The original `wolf-grammar-quest.jsx` (~1,777 lines) has been archived to `wolf-
 **Test Structure:**
 
 - `e2e/screens.spec.ts` - Screen loading and navigation (5 tests)
-- `e2e/quiz-flow.spec.ts` - Quiz journey and question types (5 tests)
+- `e2e/quiz-flow.spec.ts` - Quiz journey and question types (7 tests)
 - `e2e/win-condition.spec.ts` - Win state testing with parameterized state (2 tests)
 - `e2e/wolf-earning.spec.ts` - Wolf reward flow and scoring (5 tests)
 - `e2e/hunger.spec.ts` - Hunger system and wolf feeding (5 tests)
+- `e2e/failure-consequences.spec.ts` - Failure consequences and wolf hunger (4 tests)
 - `e2e/test-utils.ts` - Shared test utilities and helpers
 
 **Running Tests:**

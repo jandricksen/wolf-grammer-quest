@@ -8,6 +8,7 @@ import type {
   WolfRole,
   StatName,
   Question,
+  FailedWolf,
 } from "../types";
 import { territories, territoryWolves } from "../data";
 import {
@@ -18,7 +19,12 @@ import {
 } from "../utils/wolfUtils";
 import { calculateTreatsEarned, applyTreatsToInventory, TreatsEarned } from "../utils/treatUtils";
 import { checkPassingScore, shuffleArray } from "../utils/quizUtils";
-import { FEEDING_COST } from "../data/constants";
+import {
+  FEEDING_COST,
+  READING_TIME_SECONDS,
+  HUNGER_THRESHOLD_HOURS,
+  QUESTIONS_PER_QUIZ,
+} from "../data/constants";
 import { loadPersistedState, savePersistedState } from "../utils/persistenceUtils";
 
 // Pending wolf type (wolf that has been earned and assigned a name)
@@ -41,6 +47,7 @@ interface GameState {
   pendingWolf: PendingWolf | null;
   newWolfName: string;
   showPackReward: boolean;
+  failedWolf: FailedWolf | null;
 
   // Treats
   treats: Treats;
@@ -58,6 +65,8 @@ interface GameState {
   selectedAnswer: string | null;
   showFeedback: boolean;
   shuffledQuestions: Question[];
+  showAnswers: boolean;
+  readingTimeRemaining: number;
 }
 
 // Game context actions interface
@@ -69,6 +78,8 @@ interface GameActions {
   startTerritory: (territoryId: string) => void;
   selectAnswer: (answer: string) => void;
   nextQuestion: () => void;
+  revealAnswers: () => void;
+  tickReadingTimer: () => void;
 
   // Wolf actions
   setNewWolfName: (name: string) => void;
@@ -106,6 +117,7 @@ export function GameProvider({ children }: GameProviderProps) {
   const [pendingWolf, setPendingWolf] = useState<PendingWolf | null>(null);
   const [newWolfName, setNewWolfName] = useState("");
   const [showPackReward, setShowPackReward] = useState(false);
+  const [failedWolf, setFailedWolf] = useState<FailedWolf | null>(null);
 
   // Treats
   const [treats, setTreats] = useState<Treats>({
@@ -128,6 +140,42 @@ export function GameProvider({ children }: GameProviderProps) {
   const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
   const [showFeedback, setShowFeedback] = useState(false);
   const [shuffledQuestions, setShuffledQuestions] = useState<Question[]>([]);
+  const [showAnswers, setShowAnswers] = useState(false);
+  const [readingTimeRemaining, setReadingTimeRemaining] = useState(READING_TIME_SECONDS);
+
+  // Load persisted state on mount
+  useEffect(() => {
+    const loadState = async () => {
+      const persisted = await loadPersistedState();
+      if (persisted) {
+        setPack(persisted.pack);
+        setTreats(persisted.treats);
+        setCompletedTerritories(persisted.completedTerritories);
+        setTerritoryScores(persisted.territoryScores);
+        setHasWon(persisted.hasWon);
+      }
+      setIsLoading(false);
+    };
+    loadState();
+  }, []);
+
+  // Auto-save state on changes (debounced)
+  useEffect(() => {
+    // Don't save during initial load
+    if (isLoading) return;
+
+    const timeoutId = setTimeout(() => {
+      savePersistedState({
+        completedTerritories,
+        territoryScores,
+        pack,
+        treats,
+        hasWon,
+      });
+    }, 1000); // Debounce 1 second
+
+    return () => clearTimeout(timeoutId);
+  }, [completedTerritories, territoryScores, pack, treats, hasWon, isLoading]);
 
   // Load persisted state on mount
   useEffect(() => {
@@ -170,9 +218,19 @@ export function GameProvider({ children }: GameProviderProps) {
 
   // Start a territory quiz
   const startTerritory = (territoryId: string) => {
-    // Shuffle questions for this quiz session
+    // Shuffle questions and limit to QUESTIONS_PER_QUIZ
     const questions = territories[territoryId].questions;
-    setShuffledQuestions(shuffleArray(questions));
+    const shuffled = shuffleArray(questions);
+
+    // Warn if territory has fewer questions than expected
+    if (questions.length < QUESTIONS_PER_QUIZ) {
+      console.warn(
+        `Territory "${territoryId}" has only ${questions.length} questions (expected ${QUESTIONS_PER_QUIZ})`
+      );
+    }
+
+    // Take only the first QUESTIONS_PER_QUIZ questions (or all if fewer available)
+    setShuffledQuestions(shuffled.slice(0, QUESTIONS_PER_QUIZ));
 
     setCurrentTerritory(territoryId);
     setCurrentQuestionIndex(0);
@@ -180,12 +238,15 @@ export function GameProvider({ children }: GameProviderProps) {
     setSelectedAnswer(null);
     setShowFeedback(false);
     setPendingTreats(null);
+    setShowAnswers(false);
+    setReadingTimeRemaining(READING_TIME_SECONDS);
     setScreen("quiz");
   };
 
   // Handle answer selection
   const selectAnswer = (answer: string) => {
-    if (showFeedback || !currentTerritory) return;
+    // Don't allow answer selection if feedback is showing, no territory, or answers not revealed yet
+    if (showFeedback || !currentTerritory || !showAnswers) return;
 
     setSelectedAnswer(answer);
     setShowFeedback(true);
@@ -204,6 +265,8 @@ export function GameProvider({ children }: GameProviderProps) {
       setCurrentQuestionIndex(currentQuestionIndex + 1);
       setSelectedAnswer(null);
       setShowFeedback(false);
+      setShowAnswers(false);
+      setReadingTimeRemaining(READING_TIME_SECONDS);
     } else {
       // Territory complete - calculate final score including the last question
       const currentQ = shuffledQuestions[currentQuestionIndex];
@@ -233,6 +296,9 @@ export function GameProvider({ children }: GameProviderProps) {
     const passed = checkPassingScore(finalScore, totalQuestions);
     const alreadyCompleted = completedTerritories[territoryKey];
 
+    // Clear any previous failed wolf
+    setFailedWolf(null);
+
     // Calculate treats regardless of pass/fail
     const treatsEarned = calculateTreatsEarned(finalScore, totalQuestions);
     setPendingTreats(treatsEarned);
@@ -256,6 +322,27 @@ export function GameProvider({ children }: GameProviderProps) {
           name: newName,
         });
         setShowPackReward(true);
+      }
+    } else if (!passed && pack.length > 0) {
+      // Failed territory - make the most recently fed wolf hungry
+      // Find wolves that are not already hungry (most recently fed first)
+      const feedableWolves = pack
+        .filter((wolf) => !isWolfHungry(wolf))
+        .sort((a, b) => b.lastFedAt - a.lastFedAt);
+
+      if (feedableWolves.length > 0) {
+        const wolfToMakeHungry = feedableWolves[0];
+        // Set lastFedAt to make the wolf immediately hungry
+        const hungryTimestamp = Date.now() - (HUNGER_THRESHOLD_HOURS + 1) * 60 * 60 * 1000;
+
+        setPack(
+          pack.map((w) => (w.id === wolfToMakeHungry.id ? { ...w, lastFedAt: hungryTimestamp } : w))
+        );
+
+        setFailedWolf({
+          id: wolfToMakeHungry.id,
+          name: wolfToMakeHungry.name,
+        });
       }
     }
   };
@@ -312,6 +399,16 @@ export function GameProvider({ children }: GameProviderProps) {
     }
   };
 
+  // Reveal answers after reading timer completes
+  const revealAnswers = () => {
+    setShowAnswers(true);
+  };
+
+  // Tick the reading timer down by 1 second
+  const tickReadingTimer = () => {
+    setReadingTimeRemaining((prev) => Math.max(0, prev - 1));
+  };
+
   // Feed a wolf (costs 1 meat chunk, updates lastFedAt)
   const feedWolf = (wolfId: string) => {
     const wolf = pack.find((w) => w.id === wolfId);
@@ -345,6 +442,7 @@ export function GameProvider({ children }: GameProviderProps) {
     pendingWolf,
     newWolfName,
     showPackReward,
+    failedWolf,
     treats,
     pendingTreats,
     completedTerritories,
@@ -356,12 +454,16 @@ export function GameProvider({ children }: GameProviderProps) {
     selectedAnswer,
     showFeedback,
     shuffledQuestions,
+    showAnswers,
+    readingTimeRemaining,
 
     // Actions
     navigateTo,
     startTerritory,
     selectAnswer,
     nextQuestion,
+    revealAnswers,
+    tickReadingTimer,
     setNewWolfName,
     addWolfToPack,
     selectWolf,

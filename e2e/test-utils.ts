@@ -8,6 +8,19 @@ import type {
   StatName,
   Treats,
 } from "../src/types";
+import {
+  READING_TIME_SECONDS,
+  HUNGER_THRESHOLD_HOURS,
+  QUESTIONS_PER_QUIZ,
+} from "../src/data/constants";
+
+/**
+ * Get the actual number of questions that will be shown in a quiz
+ * (capped at QUESTIONS_PER_QUIZ)
+ */
+export function getQuizQuestionCount(totalQuestions: number): number {
+  return Math.min(totalQuestions, QUESTIONS_PER_QUIZ);
+}
 
 // Storage key must match the one in persistenceUtils.ts
 const STORAGE_KEY = "wolfGrammarQuest_v1";
@@ -19,6 +32,15 @@ export interface PersistedState {
   pack: Wolf[];
   treats: Treats;
   hasWon: boolean;
+}
+
+/**
+ * Wait for the reading timer to complete and answers to appear
+ * Waits for the timer countdown to finish (5 seconds by default)
+ */
+export async function waitForAnswersToAppear(page: Page): Promise<void> {
+  // Wait for the reading timer to complete (add a small buffer for animation)
+  await page.waitForTimeout(READING_TIME_SECONDS * 1000 + 500);
 }
 
 /**
@@ -49,6 +71,7 @@ export function getWrongAnswers(questions: Question[]): string[] {
 /**
  * Helper function to answer quiz questions with randomised order
  * Tries to find and click any visible correct answer from the provided list
+ * Waits for the reading timer to complete before attempting to click answers
  */
 export async function answerQuizQuestions(
   page: Page,
@@ -56,7 +79,8 @@ export async function answerQuizQuestions(
   numQuestions: number
 ) {
   for (let i = 0; i < numQuestions; i++) {
-    await page.waitForTimeout(700);
+    // Wait for the reading timer to complete before answers appear
+    await waitForAnswersToAppear(page);
 
     // Try to find and click any of the correct answers that's visible
     let answerClicked = false;
@@ -73,7 +97,7 @@ export async function answerQuizQuestions(
       throw new Error(`Could not find any correct answer on question ${i + 1}`);
     }
 
-    await page.waitForTimeout(700);
+    await page.waitForTimeout(500);
 
     // Click next or see results
     const nextButton = page.getByText(/Next Question|See Results/);
@@ -84,6 +108,7 @@ export async function answerQuizQuestions(
 /**
  * Helper function to answer questions incorrectly
  * Tries to find and click wrong answers from the provided list
+ * Waits for the reading timer to complete before attempting to click answers
  */
 export async function answerQuestionsIncorrectly(
   page: Page,
@@ -92,7 +117,8 @@ export async function answerQuestionsIncorrectly(
   numQuestions: number
 ) {
   for (let i = 0; i < numQuestions; i++) {
-    await page.waitForTimeout(700);
+    // Wait for the reading timer to complete before answers appear
+    await waitForAnswersToAppear(page);
 
     // Try to click a wrong answer
     let wrongClicked = false;
@@ -119,7 +145,7 @@ export async function answerQuestionsIncorrectly(
       }
     }
 
-    await page.waitForTimeout(700);
+    await page.waitForTimeout(500);
 
     const nextButton = page.getByText(/Next Question|See Results/);
     if (await nextButton.isVisible({ timeout: 2000 }).catch(() => false)) {
@@ -176,5 +202,20 @@ export function createTestWolf(id: string, name: string, role: WolfRole, trait: 
     fact: "Test wolf fact",
     trait,
     lastFedAt: Date.now(),
+  };
+}
+
+/**
+ * Create a hungry wolf for testing purposes (fed more than 24 hours ago)
+ */
+export function createHungryWolf(id: string, name: string, role: WolfRole, trait: StatName): Wolf {
+  return {
+    id,
+    name,
+    role,
+    earned: true,
+    fact: "Test wolf fact",
+    trait,
+    lastFedAt: Date.now() - (HUNGER_THRESHOLD_HOURS + 1) * 60 * 60 * 1000,
   };
 }

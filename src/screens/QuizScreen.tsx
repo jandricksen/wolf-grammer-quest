@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { useGameState } from "../hooks/useGameState";
 import { territories } from "../data";
 import { QuestionRenderer, WolfRewardModal } from "../components";
@@ -12,11 +13,34 @@ export function QuizScreen() {
     showPackReward,
     pendingWolf,
     shuffledQuestions,
+    showAnswers,
+    readingTimeRemaining,
     navigateTo,
     selectAnswer,
     nextQuestion,
+    revealAnswers,
+    tickReadingTimer,
     addWolfToPack,
   } = useGameState();
+
+  // Timer countdown effect
+  useEffect(() => {
+    // Don't run timer if answers are already shown or feedback is displayed
+    if (showAnswers || showFeedback) return;
+
+    // When timer reaches 0, reveal answers
+    if (readingTimeRemaining === 0) {
+      revealAnswers();
+      return;
+    }
+
+    // Tick the timer every second
+    const timerId = setInterval(() => {
+      tickReadingTimer();
+    }, 1000);
+
+    return () => clearInterval(timerId);
+  }, [readingTimeRemaining, showAnswers, showFeedback, revealAnswers, tickReadingTimer]);
 
   if (!currentTerritory || shuffledQuestions.length === 0) {
     navigateTo("home");
@@ -60,6 +84,8 @@ export function QuizScreen() {
               question={currentQuestion}
               selectedAnswer={selectedAnswer}
               showFeedback={showFeedback}
+              showAnswers={showAnswers}
+              readingTimeRemaining={readingTimeRemaining}
               onSelectAnswer={selectAnswer}
             />
 

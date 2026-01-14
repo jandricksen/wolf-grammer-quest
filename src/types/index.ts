@@ -31,7 +31,11 @@ export type WolfRole =
   | "Howler"
   | "Shadow"
   | "Elder"
-  | "Storyteller";
+  | "Storyteller"
+  | "Seeker"
+  | "Runner"
+  | "Painter"
+  | "Whisperer";
 
 export interface Wolf {
   id: string;
@@ -91,4 +95,12 @@ export interface QuizState {
   selectedAnswer: string | null;
   showFeedback: boolean;
   questions: Question[];
+  showAnswers: boolean;
+  readingTimeRemaining: number;
+}
+
+// Failure consequence state
+export interface FailedWolf {
+  id: string;
+  name: string;
 }

@@ -104,8 +104,18 @@ export const roleTraits: RoleTraits = {
   Shadow: "swiftness",
   Elder: "wisdom",
   Storyteller: "kindness",
+  Seeker: "wisdom",
+  Runner: "swiftness",
+  Painter: "focus",
+  Whisperer: "kindness",
 };
 
 // Hunger system constants
 export const HUNGER_THRESHOLD_HOURS = 24;
 export const FEEDING_COST = 1; // Meat chunks per feeding
+
+// Reading timer constants
+export const READING_TIME_SECONDS = 5;
+
+// Quiz length constants
+export const QUESTIONS_PER_QUIZ = 10;
