@@ -45,6 +45,7 @@ export interface Wolf {
   fact: string;
   trait: StatName;
   lastFedAt: number;
+  backstory?: string;
 }
 
 // Treats
@@ -81,10 +82,16 @@ export interface TerritoryWolf {
   role: WolfRole;
   fact: string;
   statTemplate: WolfRole;
+  backstories: string[];
 }
 
 export interface TerritoryWolves {
   [territoryId: string]: TerritoryWolf;
+}
+
+// Wolf backstories
+export interface WolfBackstories {
+  [territoryId: string]: string[];
 }
 
 // Quiz state

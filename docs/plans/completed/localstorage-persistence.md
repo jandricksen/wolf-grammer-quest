@@ -5,6 +5,7 @@
 Replace test-specific code (`TestInitialState`, `window.__TEST_INITIAL_STATE__`) with JSON file persistence as a real feature. This gives users portable game saves while allowing tests to inject state via the file system.
 
 **What is JSON File Persistence?**
+
 - Local file storage (saved as `wolf-grammar-quest-save.json` in user's file system)
 - Portable and shareable (users can back up, copy, or transfer their save file)
 - Human-readable (users can view their progress in any text editor)
@@ -56,6 +57,7 @@ Replace test-specific code (`TestInitialState`, `window.__TEST_INITIAL_STATE__`)
 ### B1: Create Persistence Utilities
 
 - [ ] Create `src/utils/persistenceUtils.ts`:
+
   ```typescript
   const STORAGE_KEY = "wolfGrammarQuest_v1";
   const FILE_NAME = "wolf-grammar-quest-save.json";

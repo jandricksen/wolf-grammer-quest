@@ -315,6 +315,7 @@ Distribute existing wordclasses.ts questions:
 - [x] Write additional adverb questions (focus on: adverbs of time, place, frequency, degree, manner)
 
 Final question counts:
+
 - nouns.ts: 12 questions
 - verbs.ts: 12 questions
 - adjectives.ts: 12 questions
