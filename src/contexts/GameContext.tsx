@@ -9,7 +9,6 @@ import type {
   StatName,
   Question,
   FailedWolf,
-  TestInitialState,
 } from "../types";
 import { territories, territoryWolves } from "../data";
 import {
@@ -106,7 +105,7 @@ interface GameProviderProps {
  * GameProvider - Centralized state management for Wolf Grammar Quest
  * Replaces 16 useState hooks with a single context provider
  */
-export function GameProvider({ children, initialState }: GameProviderProps) {
+export function GameProvider({ children }: GameProviderProps) {
   // Loading state for initial persistence load
   const [isLoading, setIsLoading] = useState(true);
 
@@ -114,7 +113,7 @@ export function GameProvider({ children, initialState }: GameProviderProps) {
   const [screen, setScreen] = useState<Screen>("home");
 
   // Pack and wolves - use test state if provided
-  const [pack, setPack] = useState<Wolf[]>(initialState?.pack ?? [createInitialWolf()]);
+  const [pack, setPack] = useState<Wolf[]>(testState?.pack ?? [createInitialWolf()]);
   const [selectedWolf, setSelectedWolf] = useState<Wolf | null>(null);
   const [pendingWolf, setPendingWolf] = useState<PendingWolf | null>(null);
   const [newWolfName, setNewWolfName] = useState("");
@@ -123,7 +122,7 @@ export function GameProvider({ children, initialState }: GameProviderProps) {
 
   // Treats - use test state if provided
   const [treats, setTreats] = useState<Treats>(
-    initialState?.treats ?? {
+    testState?.treats ?? {
       meatChunk: 5, // Starting treats to get going
       wisdomBerry: 0,
       swiftMeat: 0,
