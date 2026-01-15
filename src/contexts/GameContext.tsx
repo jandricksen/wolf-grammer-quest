@@ -98,7 +98,6 @@ export const GameContext = createContext<GameContextValue | undefined>(undefined
 // Provider props
 interface GameProviderProps {
   children: ReactNode;
-  initialState?: TestInitialState; // Only used in development/test mode
 }
 
 /**
@@ -112,23 +111,21 @@ export function GameProvider({ children }: GameProviderProps) {
   // Screen navigation
   const [screen, setScreen] = useState<Screen>("home");
 
-  // Pack and wolves - use test state if provided
-  const [pack, setPack] = useState<Wolf[]>(testState?.pack ?? [createInitialWolf()]);
+  // Pack and wolves
+  const [pack, setPack] = useState<Wolf[]>([createInitialWolf()]);
   const [selectedWolf, setSelectedWolf] = useState<Wolf | null>(null);
   const [pendingWolf, setPendingWolf] = useState<PendingWolf | null>(null);
   const [newWolfName, setNewWolfName] = useState("");
   const [showPackReward, setShowPackReward] = useState(false);
   const [failedWolf, setFailedWolf] = useState<FailedWolf | null>(null);
 
-  // Treats - use test state if provided
-  const [treats, setTreats] = useState<Treats>(
-    testState?.treats ?? {
-      meatChunk: 5, // Starting treats to get going
-      wisdomBerry: 0,
-      swiftMeat: 0,
-      goldenKibble: 0,
-    }
-  );
+  // Treats
+  const [treats, setTreats] = useState<Treats>({
+    meatChunk: 5, // Starting treats to get going
+    wisdomBerry: 0,
+    swiftMeat: 0,
+    goldenKibble: 0,
+  });
   const [pendingTreats, setPendingTreats] = useState<TreatsEarned | null>(null);
 
   // Territory progress

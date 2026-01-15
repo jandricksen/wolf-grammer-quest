@@ -104,12 +104,3 @@ export interface FailedWolf {
   id: string;
   name: string;
 }
-
-// Test state injection (development/test mode only)
-export interface TestInitialState {
-  completedTerritories?: CompletedTerritories;
-  territoryScores?: TerritoryScores;
-  pack?: Wolf[];
-  treats?: Treats;
-  hasWon?: boolean;
-}
