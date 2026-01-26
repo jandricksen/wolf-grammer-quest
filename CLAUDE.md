@@ -86,7 +86,8 @@ Each question has:
   earned: true,
   fact: 'Real wolf fact string',
   trait: 'wisdom' | 'swiftness' | 'courage' | 'kindness' | 'focus',
-  lastFedAt: 1234567890 // Timestamp in milliseconds
+  lastFedAt: 1234567890, // Timestamp in milliseconds
+  backstory?: 'Short fantasy-themed backstory (1-2 sentences) connected to territory and trait'
 }
 ```
 
@@ -369,12 +370,14 @@ When expanding question banks (e.g., from 10 to 25 questions per territory):
 Game progress persists via JSON file storage (using File System Access API) with localStorage fallback for older browsers. State is automatically saved when changes occur (debounced to 1 second).
 
 **Persisted State:**
+
 - Completed territories and scores
 - Wolf pack (with names, traits, roles, and hunger status)
 - Treats inventory
 - Win state
 
 **How It Works:**
+
 - Primary: JSON file (`wolf-grammar-quest-save.json`) for portable, human-readable saves
 - Fallback: localStorage for browsers without File System Access API
 - Auto-save on state changes (1-second debounce)

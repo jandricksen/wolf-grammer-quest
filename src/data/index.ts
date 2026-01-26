@@ -2,3 +2,4 @@
 export { statInfo, treatInfo, roleTraits } from "./constants";
 export { territories } from "./territories";
 export { territoryWolves } from "./territoryWolves";
+export { wolfBackstories } from "./wolfBackstories";
