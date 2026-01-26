@@ -34,13 +34,13 @@ export const adjectives: Territory = {
     },
     {
       type: "multiple",
-      question: "In 'The exhausted wolves rested', how many adjectives are there?",
-      options: ["None", "One", "Two", "Three"],
-      correct: "One",
+      question: "Which word is an ADJECTIVE in: 'The exhausted wolves rested peacefully'?",
+      options: ["exhausted", "wolves", "rested", "peacefully"],
+      correct: "exhausted",
       explanation:
-        "Only 'exhausted' is an adjective (describing the wolves). 'Rested' is a verb here — it's what they did.",
+        "Exhausted is an adjective — it describes the wolves (what kind of wolves? exhausted wolves).",
       wrongExplanation:
-        "An adjective describes a noun. Here, 'exhausted' describes the wolves (what kind of wolves? exhausted ones), so it's an adjective. But 'rested' is a verb — it tells us what the wolves did. Be careful: some words can be adjectives OR verbs depending on how they're used!",
+        "An adjective is a describing word that tells us more about a noun. Ask yourself: 'What kind of wolves?' The answer is 'exhausted wolves' — so 'exhausted' is the adjective. 'Wolves' is a noun, 'rested' is a verb (what they did), and 'peacefully' is an adverb (how they rested).",
     },
     {
       type: "multiple",
@@ -109,12 +109,10 @@ export const adjectives: Territory = {
     },
     {
       type: "multiple",
-      question:
-        "Which word could be BOTH an adjective AND a noun depending on the sentence?",
+      question: "Which word could be BOTH an adjective AND a noun depending on the sentence?",
       options: ["brave", "cold", "quick", "tall"],
       correct: "cold",
-      explanation:
-        "'Cold' can be an adjective ('the cold wind') or a noun ('I caught a cold').",
+      explanation: "'Cold' can be an adjective ('the cold wind') or a noun ('I caught a cold').",
       wrongExplanation:
         "Some words can be different word classes. 'Cold' can be an adjective ('The cold wolf shivered') or a noun ('The cold was unbearable' or 'I have a cold'). The other options (brave, quick, tall) are mainly used as adjectives only.",
     },

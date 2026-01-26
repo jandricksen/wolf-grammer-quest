@@ -111,13 +111,24 @@ export const pronouns: Territory = {
     {
       type: "multiple",
       question:
-        "In 'The pups played with their mother. She watched them carefully', how many pronouns are there?",
+        "In 'The pups ran to the den. She followed them there', how many PRONOUNS are there?",
       options: ["One", "Two", "Three", "Four"],
-      correct: "Three",
+      correct: "Two",
       explanation:
-        "'Their' (possessive), 'She' (personal), and 'them' (personal) — three pronouns in total!",
+        "'She' (replacing a female wolf) and 'them' (replacing the pups) are both pronouns. That's two!",
       wrongExplanation:
-        "A pronoun replaces a noun. Count them: 'their' (possessive pronoun/determiner showing the mother belongs to the pups), 'She' (personal pronoun replacing 'mother'), and 'them' (personal pronoun replacing 'pups'). That's three pronouns!",
+        "A pronoun is a word that takes the place of a noun so we don't have to repeat it. In these sentences: 'She' is a pronoun (it replaces the name of a female wolf), and 'them' is a pronoun (it replaces 'the pups'). 'There' is an adverb telling us where, not a pronoun. So there are two pronouns: 'She' and 'them'.",
+    },
+    {
+      type: "multiple",
+      question:
+        "Which word is a PRONOUN in: 'The wolf saw the rabbit and chased it across the field'?",
+      options: ["wolf", "rabbit", "it", "field"],
+      correct: "it",
+      explanation:
+        "'It' is a pronoun — it replaces 'the rabbit' so we don't have to say 'rabbit' twice.",
+      wrongExplanation:
+        "A pronoun takes the place of a noun to avoid repetition. In this sentence, 'it' replaces 'the rabbit' — instead of saying 'chased the rabbit', we say 'chased it'. 'Wolf', 'rabbit', and 'field' are all nouns (naming words), not pronouns.",
     },
   ],
 };

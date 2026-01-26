@@ -25,13 +25,13 @@ export const nouns: Territory = {
     },
     {
       type: "multiple",
-      question: "Which is an abstract NOUN in: 'Courage helped the young wolf survive the winter'?",
-      options: ["Courage", "helped", "young", "wolf"],
-      correct: "Courage",
+      question: "Which is a NOUN in: 'The brave wolf crossed the frozen river'?",
+      options: ["brave", "wolf", "crossed", "frozen"],
+      correct: "wolf",
       explanation:
-        "Courage is an abstract noun — it names a quality or idea, not just physical things.",
+        "Wolf is a noun — it names a creature. Nouns are naming words for people, places, things, or animals.",
       wrongExplanation:
-        "A noun is a naming word. Most nouns name things you can see or touch (wolf, mountain), but abstract nouns name ideas, feelings, or qualities that you can't touch — like 'courage', 'happiness', or 'freedom'. 'Courage' is an abstract noun because it names a quality.",
+        "A noun is a naming word — it names a person, place, thing, or creature. In this sentence, 'wolf' is a noun because it names an animal. 'River' is also a noun (it names a thing), but it's not in the options. 'Brave' and 'frozen' are adjectives (describing words), and 'crossed' is a verb (an action word).",
     },
     {
       type: "multiple",
@@ -63,12 +63,13 @@ export const nouns: Territory = {
     },
     {
       type: "multiple",
-      question: "Which is an abstract NOUN in: 'The wolf showed great wisdom'?",
-      options: ["wolf", "showed", "great", "wisdom"],
-      correct: "wisdom",
-      explanation: "Wisdom is an abstract noun — it names a quality you cannot touch or see.",
+      question: "Which is the NOUN in: 'The alpha howled loudly at the moon'?",
+      options: ["howled", "loudly", "at", "moon"],
+      correct: "moon",
+      explanation:
+        "Moon is a noun — it names a thing in the sky. 'Alpha' is also a noun but isn't in the options.",
       wrongExplanation:
-        "Abstract nouns name ideas, feelings, or qualities that you cannot physically touch. 'Wisdom' is something you can have but cannot hold in your hands, making it an abstract noun. Other abstract nouns include 'love', 'fear', and 'happiness'.",
+        "A noun is a naming word for a person, place, thing, or creature. Looking at the options: 'howled' is a verb (an action), 'loudly' is an adverb (tells us how), 'at' is a preposition, and 'moon' is a noun (it names a thing). The correct answer is 'moon'.",
     },
     {
       type: "multiple",
@@ -90,13 +91,13 @@ export const nouns: Territory = {
     },
     {
       type: "multiple",
-      question: "Which word class can 'run' belong to?",
-      options: ["Only a verb", "Only a noun", "Both verb and noun", "Neither"],
-      correct: "Both verb and noun",
+      question: "Which word is an ADVERB in: 'The pack moved quietly through the trees'?",
+      options: ["pack", "moved", "quietly", "trees"],
+      correct: "quietly",
       explanation:
-        "'The wolf will run' (verb) vs 'The wolf went for a run' (noun). Many words can be different classes!",
+        "Quietly is an adverb — it tells us HOW the pack moved. Many adverbs end in '-ly'.",
       wrongExplanation:
-        "Many English words can belong to different word classes depending on how they're used in a sentence. 'Run' can be a verb ('I run fast') or a noun ('I went for a run'). The word class depends on the job the word is doing in that particular sentence.",
+        "An adverb tells us more about a verb — it describes how, when, or where something happens. Many adverbs end in '-ly'. In this sentence, 'quietly' tells us HOW the pack moved, so it's an adverb. 'Pack' and 'trees' are nouns, and 'moved' is a verb.",
     },
     {
       type: "multiple",
